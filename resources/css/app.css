@@ -7,6 +7,18 @@
 @source "../**/*.vue";
 
 @theme {
-    --font-sans: 'Instrument Sans', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji',
+    --font-sans: 'Plus Jakarta Sans', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji',
         'Segoe UI Symbol', 'Noto Color Emoji';
+
+    --color-brand-50: #eef8f6;
+    --color-brand-100: #d5efe9;
+    --color-brand-200: #aee0d4;
+    --color-brand-300: #7cc9b8;
+    --color-brand-400: #4eab97;
+    --color-brand-500: #348f7c;
+    --color-brand-600: #277365;
+    --color-brand-700: #225c53;
+    --color-brand-800: #1f4a43;
+    --color-brand-900: #1c3e39;
+    --color-brand-950: #0d2320;
 }
