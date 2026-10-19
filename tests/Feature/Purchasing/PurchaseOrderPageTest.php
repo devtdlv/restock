@@ -49,7 +49,7 @@ class PurchaseOrderPageTest extends TestCase
             ->get(route('purchase-orders.show', $order))
             ->assertOk()
             ->assertSee($order->number, false)
-            ->assertSee($order->supplier->name, false);
+            ->assertSee($order->supplier->name);
     }
 
     public function test_purchase_orders_can_be_searched_and_filtered_by_status(): void

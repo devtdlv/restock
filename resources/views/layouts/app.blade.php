@@ -50,7 +50,7 @@
                             ['label' => 'Audit Logs', 'route' => 'audit-logs.index', 'ready' => true],
                             ['label' => 'Suppliers', 'route' => 'suppliers.index', 'ready' => true],
                             ['label' => 'Purchase Orders', 'route' => 'purchase-orders.index', 'ready' => true],
-                            ['label' => 'Reports', 'route' => null, 'ready' => false],
+                            ['label' => 'Reports', 'route' => 'reports.index', 'ready' => true, 'active' => 'reports.*'],
                             ['label' => 'Settings', 'route' => null, 'ready' => false],
                         ];
                     @endphp
@@ -62,7 +62,7 @@
                                 @click="sidebarOpen = false"
                                 @class([
                                     'flex items-center rounded-lg px-3 py-2.5 text-sm font-medium transition',
-                                    request()->routeIs($item['route'])
+                                    request()->routeIs($item['active'] ?? $item['route'])
                                         ? 'bg-white/10 text-white'
                                         : 'text-slate-300 hover:bg-white/5 hover:text-white',
                                 ])
