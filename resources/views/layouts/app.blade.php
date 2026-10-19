@@ -44,8 +44,8 @@
                     @php
                         $navItems = [
                             ['label' => 'Dashboard', 'route' => 'dashboard', 'ready' => true],
-                            ['label' => 'Products', 'route' => null, 'ready' => false],
-                            ['label' => 'Categories', 'route' => null, 'ready' => false],
+                            ['label' => 'Products', 'route' => 'products.index', 'ready' => true],
+                            ['label' => 'Categories', 'route' => 'categories.index', 'ready' => true],
                             ['label' => 'Suppliers', 'route' => null, 'ready' => false],
                             ['label' => 'Stock Movements', 'route' => null, 'ready' => false],
                             ['label' => 'Purchase Orders', 'route' => null, 'ready' => false],

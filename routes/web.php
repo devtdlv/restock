@@ -5,7 +5,9 @@ use App\Livewire\Auth\ForgotPassword;
 use App\Livewire\Auth\Login;
 use App\Livewire\Auth\Register;
 use App\Livewire\Auth\ResetPassword;
+use App\Livewire\Categories\Index as CategoriesIndex;
 use App\Livewire\Dashboard;
+use App\Livewire\Products\Index as ProductsIndex;
 use Illuminate\Support\Facades\Route;
 
 Route::redirect('/', '/dashboard');
@@ -19,5 +21,7 @@ Route::middleware('guest')->group(function () {
 
 Route::middleware('auth')->group(function () {
     Route::get('dashboard', Dashboard::class)->name('dashboard');
+    Route::get('categories', CategoriesIndex::class)->name('categories.index');
+    Route::get('products', ProductsIndex::class)->name('products.index');
     Route::post('logout', LogoutController::class)->name('logout');
 });

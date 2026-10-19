@@ -1,8 +1,16 @@
 @props(['messages'])
 
-@if ($messages)
+@php
+    $resolvedMessages = collect(\Illuminate\Support\Arr::wrap($messages))
+        ->flatten()
+        ->filter(fn ($message) => filled($message))
+        ->values()
+        ->all();
+@endphp
+
+@if ($resolvedMessages)
     <ul {{ $attributes->merge(['class' => 'mt-1.5 space-y-1 text-sm text-red-600']) }}>
-        @foreach ((array) $messages as $message)
+        @foreach ($resolvedMessages as $message)
             <li>{{ $message }}</li>
         @endforeach
     </ul>
