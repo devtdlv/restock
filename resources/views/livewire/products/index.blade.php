@@ -73,9 +73,21 @@
                 </div>
 
                 <div>
-                    <x-input-label for="quantity_on_hand" value="Quantity on hand" />
-                    <x-text-input wire:model="quantity_on_hand" id="quantity_on_hand" type="number" min="0" step="1" required />
-                    <x-input-error :messages="$errors->get('quantity_on_hand')" />
+                    @if ($productId)
+                        <x-input-label for="quantity_on_hand" value="Quantity on hand" />
+                        <x-text-input
+                            id="quantity_on_hand"
+                            type="number"
+                            value="{{ $quantity_on_hand }}"
+                            disabled
+                        />
+                        <p class="mt-1.5 text-xs text-slate-500">Stock quantity is changed through stock movements only.</p>
+                    @else
+                        <x-input-label for="quantity_on_hand" value="Opening stock" />
+                        <x-text-input wire:model="quantity_on_hand" id="quantity_on_hand" type="number" min="0" step="1" required />
+                        <p class="mt-1.5 text-xs text-slate-500">Values greater than zero create a traceable opening stock movement.</p>
+                        <x-input-error :messages="$errors->get('quantity_on_hand')" />
+                    @endif
                 </div>
 
                 <div>
@@ -128,6 +140,69 @@
                         <span wire:loading wire:target="save">Saving…</span>
                     </x-primary-button>
                     <x-secondary-button wire:click="cancelForm">Cancel</x-secondary-button>
+                </div>
+            </form>
+        </div>
+    @endif
+
+    @if ($showAdjustForm)
+        <div class="rounded-xl border border-slate-200 bg-white p-5 shadow-sm sm:p-6">
+            <h2 class="text-lg font-semibold text-slate-900">Adjust stock</h2>
+            <p class="mt-1 text-sm text-slate-500">
+                {{ $adjustingProductName }}
+                <span class="font-mono text-xs text-slate-400">({{ $adjustingProductSku }})</span>
+            </p>
+            <p class="mt-3 text-sm text-slate-700">
+                Current quantity:
+                <span class="font-semibold">{{ $adjustingCurrentQuantity }}</span>
+            </p>
+
+            <form wire:submit="applyStockAdjustment" class="mt-6 grid gap-4 md:grid-cols-2">
+                <div>
+                    <x-input-label for="adjustmentType" value="Movement type" />
+                    <select
+                        wire:model.live="adjustmentType"
+                        id="adjustmentType"
+                        class="block w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm text-slate-900 shadow-sm focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-500/20"
+                    >
+                        @foreach ($adjustmentTypes as $type)
+                            <option value="{{ $type->value }}">{{ $type->label() }}</option>
+                        @endforeach
+                    </select>
+                    <x-input-error :messages="$errors->get('adjustmentType')" />
+                </div>
+
+                <div>
+                    <x-input-label for="adjustmentQuantity" :value="$adjustmentType === 'adjustment' ? 'Signed quantity change' : 'Quantity'" />
+                    <x-text-input
+                        wire:model="adjustmentQuantity"
+                        id="adjustmentQuantity"
+                        type="number"
+                        step="1"
+                        required
+                    />
+                    <p class="mt-1.5 text-xs text-slate-500">
+                        @if ($adjustmentType === 'adjustment')
+                            Use a positive number to increase stock or a negative number to decrease stock.
+                        @else
+                            Enter a positive quantity. StockPilot applies the correct sign for the selected type.
+                        @endif
+                    </p>
+                    <x-input-error :messages="$errors->get('adjustmentQuantity')" />
+                </div>
+
+                <div class="md:col-span-2">
+                    <x-input-label for="adjustmentReason" value="Reason" />
+                    <x-textarea-input wire:model="adjustmentReason" id="adjustmentReason" rows="3" required placeholder="Why is this stock changing?" />
+                    <x-input-error :messages="$errors->get('adjustmentReason')" />
+                </div>
+
+                <div class="md:col-span-2 flex flex-wrap gap-3">
+                    <x-primary-button class="w-auto" wire:loading.attr="disabled">
+                        <span wire:loading.remove wire:target="applyStockAdjustment">Apply stock change</span>
+                        <span wire:loading wire:target="applyStockAdjustment">Applying…</span>
+                    </x-primary-button>
+                    <x-secondary-button wire:click="cancelAdjustStock">Cancel</x-secondary-button>
                 </div>
             </form>
         </div>
@@ -208,7 +283,14 @@
                                     <x-status-badge :active="$product->is_active" />
                                 </td>
                                 <td class="px-4 py-3">
-                                    <div class="flex justify-end gap-2">
+                                    <div class="flex flex-wrap justify-end gap-2">
+                                        <button
+                                            type="button"
+                                            wire:click="openAdjustStock({{ $product->id }})"
+                                            class="rounded-lg px-2.5 py-1.5 text-sm font-medium text-slate-700 hover:bg-slate-100"
+                                        >
+                                            Adjust Stock
+                                        </button>
                                         <button
                                             type="button"
                                             wire:click="edit({{ $product->id }})"

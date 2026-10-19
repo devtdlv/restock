@@ -3,6 +3,7 @@
 namespace App\Livewire\Categories;
 
 use App\Models\Category;
+use App\Services\Catalog\CategoryCatalogService;
 use Illuminate\Database\QueryException;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
@@ -86,7 +87,7 @@ class Index extends Component
         $this->resetForm();
     }
 
-    public function save(): void
+    public function save(CategoryCatalogService $categories): void
     {
         $this->ensureAuthenticated();
         $this->clearFeedback();
@@ -109,23 +110,20 @@ class Index extends Component
             'is_active' => ['boolean'],
         ]);
 
+        $attributes = [
+            'name' => $validated['name'],
+            'slug' => $validated['slug'],
+            'description' => $validated['description'] ?: null,
+            'is_active' => $validated['is_active'],
+        ];
+
         try {
             if ($this->categoryId) {
                 $category = Category::query()->findOrFail($this->categoryId);
-                $category->update([
-                    'name' => $validated['name'],
-                    'slug' => $validated['slug'],
-                    'description' => $validated['description'] ?: null,
-                    'is_active' => $validated['is_active'],
-                ]);
+                $categories->update($category, $attributes, auth()->user());
                 $this->statusMessage = 'Category updated successfully.';
             } else {
-                Category::query()->create([
-                    'name' => $validated['name'],
-                    'slug' => $validated['slug'],
-                    'description' => $validated['description'] ?: null,
-                    'is_active' => $validated['is_active'],
-                ]);
+                $categories->create($attributes, auth()->user());
                 $this->statusMessage = 'Category created successfully.';
             }
         } catch (QueryException) {
@@ -154,7 +152,7 @@ class Index extends Component
         $this->confirmingDeletionId = null;
     }
 
-    public function delete(): void
+    public function delete(CategoryCatalogService $categories): void
     {
         $this->ensureAuthenticated();
         $this->clearFeedback();
@@ -165,7 +163,7 @@ class Index extends Component
 
         try {
             $category = Category::query()->findOrFail($this->confirmingDeletionId);
-            $category->delete();
+            $categories->delete($category, auth()->user());
             $this->statusMessage = 'Category deleted successfully.';
         } catch (QueryException) {
             $this->errorMessage = 'Unable to delete the category right now. Please try again.';

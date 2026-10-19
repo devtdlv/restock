@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Product extends Model
 {
@@ -12,7 +13,10 @@ class Product extends Model
     use HasFactory;
 
     /**
-     * The attributes that are mass assignable.
+     * Mass-assignable attributes.
+     *
+     * quantity_on_hand is intentionally omitted. Inventory changes must go through
+     * App\Services\Stock\StockMovementService (forceFill is reserved for that path).
      *
      * @var list<string>
      */
@@ -22,14 +26,11 @@ class Product extends Model
         'description',
         'unit_price',
         'cost_price',
-        'quantity_on_hand',
         'reorder_level',
         'is_active',
     ];
 
     /**
-     * Get the attributes that should be cast.
-     *
      * @return array<string, string>
      */
     protected function casts(): array
@@ -43,11 +44,13 @@ class Product extends Model
         ];
     }
 
-    /**
-     * Categories assigned to this product.
-     */
     public function categories(): BelongsToMany
     {
         return $this->belongsToMany(Category::class);
+    }
+
+    public function stockMovements(): HasMany
+    {
+        return $this->hasMany(StockMovement::class);
     }
 }

@@ -37,7 +37,6 @@ class ProductCategoryTest extends TestCase
             'sku' => 'SKU-MOUSE-0001',
             'unit_price' => '29.99',
             'cost_price' => '12.50',
-            'quantity_on_hand' => 40,
             'reorder_level' => 5,
         ]);
 
@@ -47,7 +46,7 @@ class ProductCategoryTest extends TestCase
             'sku' => 'SKU-MOUSE-0001',
             'unit_price' => '29.99',
             'cost_price' => '12.50',
-            'quantity_on_hand' => 40,
+            'quantity_on_hand' => 0,
             'reorder_level' => 5,
             'is_active' => true,
         ]);

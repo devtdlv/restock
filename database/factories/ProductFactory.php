@@ -14,6 +14,8 @@ class ProductFactory extends Factory
     /**
      * Define the model's default state.
      *
+     * quantity_on_hand defaults to 0 at the database level and is not mass-assigned.
+     *
      * @return array<string, mixed>
      */
     public function definition(): array
@@ -24,7 +26,6 @@ class ProductFactory extends Factory
             'description' => fake()->optional()->sentence(),
             'unit_price' => number_format(fake()->randomFloat(2, 0, 9999.99), 2, '.', ''),
             'cost_price' => number_format(fake()->randomFloat(2, 0, 5000.00), 2, '.', ''),
-            'quantity_on_hand' => fake()->numberBetween(0, 500),
             'reorder_level' => fake()->numberBetween(0, 50),
             'is_active' => true,
         ];

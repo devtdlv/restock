@@ -2,10 +2,13 @@
 
 namespace Tests\Feature\Catalog;
 
+use App\Enums\StockMovementType;
 use App\Livewire\Products\Index;
 use App\Models\Category;
 use App\Models\Product;
+use App\Models\StockMovement;
 use App\Models\User;
+use App\Services\Stock\StockMovementService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Livewire\Livewire;
 use Tests\TestCase;
@@ -55,7 +58,16 @@ class ProductManagementTest extends TestCase
         $this->assertNotNull($product);
         $this->assertSame('29.99', $product->unit_price);
         $this->assertSame('12.50', $product->cost_price);
+        $this->assertSame(25, $product->quantity_on_hand);
         $this->assertCount(0, $product->categories);
+        $this->assertDatabaseHas('stock_movements', [
+            'product_id' => $product->id,
+            'type' => StockMovementType::StockIn->value,
+            'quantity_change' => 25,
+            'quantity_before' => 0,
+            'quantity_after' => 25,
+            'reason' => StockMovementService::OPENING_STOCK_REASON,
+        ]);
     }
 
     public function test_products_can_be_created_with_multiple_categories(): void
@@ -129,19 +141,61 @@ class ProductManagementTest extends TestCase
             'unit_price' => '10.00',
         ]);
 
+        app(StockMovementService::class)->apply(
+            $product,
+            StockMovementType::StockIn,
+            12,
+            $user,
+            'Seed stock',
+        );
+
         Livewire::actingAs($user)
             ->test(Index::class)
             ->call('edit', $product->id)
             ->set('name', 'New Name')
             ->set('unit_price', '15.25')
+            ->set('quantity_on_hand', '999')
             ->call('save')
             ->assertHasNoErrors();
+
+        $product->refresh();
 
         $this->assertDatabaseHas('products', [
             'id' => $product->id,
             'name' => 'New Name',
             'sku' => 'SKU-OLD-4000',
             'unit_price' => '15.25',
+            'quantity_on_hand' => 12,
+        ]);
+        $this->assertSame(12, $product->quantity_on_hand);
+        $this->assertSame(1, StockMovement::query()->where('product_id', $product->id)->count());
+    }
+
+    public function test_direct_quantity_edits_are_ignored_on_update(): void
+    {
+        $user = User::factory()->create();
+        $product = Product::factory()->create(['sku' => 'SKU-QTY-LOCK']);
+
+        app(StockMovementService::class)->apply(
+            $product,
+            StockMovementType::StockIn,
+            8,
+            $user,
+            'Initial',
+        );
+
+        Livewire::actingAs($user)
+            ->test(Index::class)
+            ->call('edit', $product->id)
+            ->set('quantity_on_hand', '100')
+            ->set('name', 'Quantity Locked Product')
+            ->call('save')
+            ->assertHasNoErrors();
+
+        $this->assertSame(8, $product->fresh()->quantity_on_hand);
+        $this->assertDatabaseMissing('stock_movements', [
+            'product_id' => $product->id,
+            'quantity_after' => 100,
         ]);
     }
 
