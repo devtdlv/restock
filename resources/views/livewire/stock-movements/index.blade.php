@@ -64,7 +64,7 @@
                         @foreach ($movements as $movement)
                             <tr wire:key="movement-{{ $movement->id }}" class="hover:bg-slate-50/80">
                                 <td class="whitespace-nowrap px-4 py-3 text-slate-600">
-                                    {{ $movement->created_at?->timezone(config('app.timezone'))->format('Y-m-d H:i') }}
+                                    {{ $display->dateTime($movement->created_at) }}
                                 </td>
                                 <td class="px-4 py-3">
                                     <div class="font-medium text-slate-900">{{ $movement->product?->name ?? 'Deleted product' }}</div>

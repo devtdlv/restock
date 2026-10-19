@@ -8,6 +8,7 @@ use App\Exceptions\InvalidStockMovementException;
 use App\Models\Category;
 use App\Models\Product;
 use App\Services\Catalog\ProductCatalogService;
+use App\Services\Settings\SettingsService;
 use App\Services\Stock\StockMovementService;
 use Brick\Math\BigDecimal;
 use Brick\Math\RoundingMode;
@@ -306,7 +307,7 @@ class Index extends Component
         $this->resetPage();
     }
 
-    public function render()
+    public function render(SettingsService $settings)
     {
         $products = Product::query()
             ->with('categories')
@@ -318,7 +319,7 @@ class Index extends Component
                 });
             })
             ->orderBy('name')
-            ->paginate(10);
+            ->paginate($settings->defaultPerPage());
 
         return view('livewire.products.index', [
             'products' => $products,
@@ -341,7 +342,7 @@ class Index extends Component
         $this->unit_price = '0.00';
         $this->cost_price = '0.00';
         $this->quantity_on_hand = '0';
-        $this->reorder_level = '0';
+        $this->reorder_level = (string) app(SettingsService::class)->defaultReorderLevel();
         $this->is_active = true;
         $this->resetValidation();
     }

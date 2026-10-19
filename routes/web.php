@@ -16,6 +16,7 @@ use App\Livewire\Reports\Index as ReportsIndex;
 use App\Livewire\Reports\LowStock as ReportsLowStock;
 use App\Livewire\Reports\Purchasing as ReportsPurchasing;
 use App\Livewire\Reports\StockMovements as ReportsStockMovements;
+use App\Livewire\Settings\Index as SettingsIndex;
 use App\Livewire\Suppliers\Index as SuppliersIndex;
 use Illuminate\Support\Facades\Route;
 
@@ -41,5 +42,6 @@ Route::middleware('auth')->group(function () {
     Route::get('reports/low-stock', ReportsLowStock::class)->name('reports.low-stock');
     Route::get('reports/stock-movements', ReportsStockMovements::class)->name('reports.stock-movements');
     Route::get('reports/purchasing', ReportsPurchasing::class)->name('reports.purchasing');
+    Route::get('settings', SettingsIndex::class)->name('settings.index');
     Route::post('logout', LogoutController::class)->name('logout');
 });

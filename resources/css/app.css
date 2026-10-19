@@ -22,3 +22,10 @@
     --color-brand-900: #1c3e39;
     --color-brand-950: #0d2320;
 }
+
+@layer base {
+    :focus-visible {
+        outline: 2px solid var(--color-brand-500);
+        outline-offset: 2px;
+    }
+}

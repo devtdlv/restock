@@ -1,7 +1,7 @@
 <div>
     <div class="mb-6">
         <h1 class="text-xl font-semibold tracking-tight text-slate-900">Welcome back</h1>
-        <p class="mt-1 text-sm text-slate-500">Sign in to continue to your inventory workspace.</p>
+        <p class="mt-1 text-sm text-slate-500">Sign in to continue to your StockPilot inventory workspace.</p>
     </div>
 
     @if (session('status'))

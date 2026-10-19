@@ -99,7 +99,8 @@ class AuthenticationTest extends TestCase
 
         $response->assertOk();
         $response->assertSee('Welcome, '.$user->name, false);
-        $response->assertSee('Coming soon', false);
+        $response->assertSee('Active products', false);
+        $response->assertSee('Quick links', false);
     }
 
     public function test_authenticated_users_are_redirected_from_guest_auth_pages(): void

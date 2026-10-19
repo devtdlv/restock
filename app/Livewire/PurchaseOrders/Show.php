@@ -225,7 +225,7 @@ class Show extends Component
         }
     }
 
-    public function render()
+    public function render(\App\Support\AppDisplay $display)
     {
         $this->purchaseOrder->loadMissing([
             'supplier',
@@ -258,6 +258,7 @@ class Show extends Component
                 && ! $this->purchaseOrder->hasAnyReceivedQuantity(),
             'canReceive' => $this->purchaseOrder->status->allowsReceiving(),
             'receiptPreview' => $receiptPreview,
+            'display' => $display,
         ])->layoutData(['header' => $this->purchaseOrder->number]);
     }
 

@@ -99,7 +99,7 @@ class Index extends Component
             })
             ->orderByDesc('created_at')
             ->orderByDesc('id')
-            ->paginate(15);
+            ->paginate(app(\App\Services\Settings\SettingsService::class)->defaultPerPage());
 
         $selectedAudit = null;
         $selectedChanges = [];

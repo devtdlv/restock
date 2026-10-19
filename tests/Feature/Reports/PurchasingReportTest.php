@@ -77,7 +77,7 @@ class PurchasingReportTest extends TestCase
             ->test(Purchasing::class)
             ->assertSee('Acme Supplies', false)
             ->assertSee('Beta Goods', false)
-            ->assertSee('1050.00', false)
+            ->assertSee('$1050.00', false)
             ->assertSee('committed orders only', false)
             ->assertSee($draft->number, false)
             ->assertSee($ordered->number, false);

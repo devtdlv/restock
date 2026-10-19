@@ -175,7 +175,7 @@ class Index extends Component
         $this->resetPage();
     }
 
-    public function render()
+    public function render(\App\Services\Settings\SettingsService $settings)
     {
         $categories = Category::query()
             ->withCount('products')
@@ -184,7 +184,7 @@ class Index extends Component
                 $query->whereRaw('LOWER(name) LIKE ?', [$term]);
             })
             ->orderBy('name')
-            ->paginate(10);
+            ->paginate($settings->defaultPerPage());
 
         return view('livewire.categories.index', [
             'categories' => $categories,

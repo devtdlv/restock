@@ -4,6 +4,8 @@ namespace App\Livewire\StockMovements;
 
 use App\Enums\StockMovementType;
 use App\Models\StockMovement;
+use App\Services\Settings\SettingsService;
+use App\Support\AppDisplay;
 use Illuminate\Support\Str;
 use Livewire\Attributes\Layout;
 use Livewire\Attributes\Title;
@@ -33,7 +35,7 @@ class Index extends Component
         $this->resetPage();
     }
 
-    public function render()
+    public function render(SettingsService $settings, AppDisplay $display)
     {
         $movements = StockMovement::query()
             ->with(['product', 'user'])
@@ -51,11 +53,12 @@ class Index extends Component
             })
             ->orderByDesc('created_at')
             ->orderByDesc('id')
-            ->paginate(15);
+            ->paginate($settings->defaultPerPage());
 
         return view('livewire.stock-movements.index', [
             'movements' => $movements,
             'movementTypes' => StockMovementType::cases(),
+            'display' => $display,
         ])->layoutData(['header' => 'Stock Movements']);
     }
 }

@@ -185,11 +185,11 @@
             </div>
             <div>
                 <dt class="text-xs font-medium uppercase tracking-wide text-slate-500">Order date</dt>
-                <dd class="mt-1 text-sm text-slate-900">{{ $order->order_date?->format('Y-m-d') }}</dd>
+                <dd class="mt-1 text-sm text-slate-900">{{ $display->date($order->order_date) }}</dd>
             </div>
             <div>
                 <dt class="text-xs font-medium uppercase tracking-wide text-slate-500">Expected delivery</dt>
-                <dd class="mt-1 text-sm text-slate-900">{{ $order->expected_delivery_date?->format('Y-m-d') ?: '—' }}</dd>
+                <dd class="mt-1 text-sm text-slate-900">{{ $order->expected_delivery_date ? $display->date($order->expected_delivery_date) : '—' }}</dd>
             </div>
             <div>
                 <dt class="text-xs font-medium uppercase tracking-wide text-slate-500">Created by</dt>
@@ -201,7 +201,7 @@
             </div>
             <div>
                 <dt class="text-xs font-medium uppercase tracking-wide text-slate-500">Grand total</dt>
-                <dd class="mt-1 text-sm font-medium text-slate-900">{{ $order->totalAmount() }}</dd>
+                <dd class="mt-1 text-sm font-medium text-slate-900">{{ $display->money($order->totalAmount()) }}</dd>
             </div>
             <div class="sm:col-span-2 lg:col-span-3">
                 <dt class="text-xs font-medium uppercase tracking-wide text-slate-500">Notes</dt>
@@ -236,8 +236,8 @@
                             <td class="px-4 py-3 text-slate-700">{{ $item->ordered_quantity }}</td>
                             <td class="px-4 py-3 text-slate-700">{{ $item->received_quantity }}</td>
                             <td class="px-4 py-3 text-slate-700">{{ $item->outstandingQuantity() }}</td>
-                            <td class="px-4 py-3 text-slate-700">{{ \App\Support\Money::of($item->unit_cost) }}</td>
-                            <td class="px-4 py-3 text-slate-900">{{ $item->lineTotal() }}</td>
+                            <td class="px-4 py-3 text-slate-700">{{ $display->money($item->unit_cost) }}</td>
+                            <td class="px-4 py-3 text-slate-900">{{ $display->money($item->lineTotal()) }}</td>
                         </tr>
                     @endforeach
                 </tbody>
@@ -263,7 +263,7 @@
                             <div>
                                 <div class="text-sm font-medium text-slate-900">{{ $receipt->receipt_key }}</div>
                                 <div class="text-xs text-slate-500">
-                                    {{ $receipt->received_at?->timezone(config('app.timezone'))->format('Y-m-d H:i') }}
+                                    {{ $display->dateTime($receipt->received_at) }}
                                     · {{ $receipt->user?->name ?? 'Unavailable' }}
                                 </div>
                             </div>

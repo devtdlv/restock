@@ -204,7 +204,7 @@ class Index extends Component
         $this->resetPage();
     }
 
-    public function render()
+    public function render(\App\Services\Settings\SettingsService $settings, \App\Support\AppDisplay $display)
     {
         $orders = PurchaseOrder::query()
             ->with(['supplier', 'items'])
@@ -223,7 +223,7 @@ class Index extends Component
             })
             ->orderByDesc('order_date')
             ->orderByDesc('id')
-            ->paginate(10);
+            ->paginate($settings->defaultPerPage());
 
         $supplierQuery = Supplier::query()->orderBy('name');
         if ($this->purchaseOrderId === null) {
@@ -252,6 +252,7 @@ class Index extends Component
             'suppliers' => $supplierQuery->get(['id', 'name', 'code', 'is_active']),
             'products' => $products,
             'formGrandTotal' => $this->formGrandTotal(),
+            'display' => $display,
         ])->layoutData(['header' => 'Purchase Orders']);
     }
 

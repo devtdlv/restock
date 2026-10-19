@@ -8,6 +8,7 @@ use App\Models\Category;
 use App\Models\Product;
 use App\Models\PurchaseOrder;
 use App\Models\PurchaseOrderReceipt;
+use App\Models\Setting;
 use App\Models\Supplier;
 use Illuminate\Support\Str;
 
@@ -41,6 +42,7 @@ class AuditPresenter
             Supplier::class => 'Supplier',
             PurchaseOrder::class => 'Purchase Order',
             PurchaseOrderReceipt::class => 'Purchase Order Receipt',
+            Setting::class => 'Settings',
         ];
     }
 
@@ -72,6 +74,14 @@ class AuditPresenter
             'receipt_key' => 'Receipt key',
             'purchase_order_id' => 'Purchase order',
             'is_active' => 'Active',
+            'business_name' => 'Business name',
+            'business_email' => 'Business email',
+            'business_phone' => 'Business phone',
+            'business_address' => 'Business address',
+            'default_reorder_level' => 'Default reorder level',
+            'default_per_page' => 'Default items per page',
+            'date_format' => 'Date format',
+            'currency_symbol' => 'Currency symbol',
             default => Str::of($field)->replace('_', ' ')->title()->toString(),
         };
     }
@@ -90,7 +100,11 @@ class AuditPresenter
     public function entityName(AuditLog $audit): ?string
     {
         $values = $this->safeValues($audit->after_values ?: $audit->before_values);
-        $name = $values['name'] ?? $values['number'] ?? $values['receipt_key'] ?? null;
+        $name = $values['name']
+            ?? $values['business_name']
+            ?? $values['number']
+            ?? $values['receipt_key']
+            ?? null;
 
         return is_string($name) && $name !== '' ? $name : null;
     }

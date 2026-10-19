@@ -2,6 +2,10 @@
 
 namespace App\Livewire;
 
+use App\Enums\PurchaseOrderStatus;
+use App\Models\PurchaseOrder;
+use App\Services\Reports\InventoryReportService;
+use App\Support\AppDisplay;
 use Livewire\Attributes\Layout;
 use Livewire\Attributes\Title;
 use Livewire\Component;
@@ -10,9 +14,21 @@ use Livewire\Component;
 #[Title('Dashboard - StockPilot')]
 class Dashboard extends Component
 {
-    public function render()
+    public function render(InventoryReportService $inventoryReports, AppDisplay $display)
     {
-        return view('livewire.dashboard')
-            ->layoutData(['header' => 'Dashboard']);
+        $metrics = $inventoryReports->overviewMetrics();
+
+        $outstandingPurchaseOrders = PurchaseOrder::query()
+            ->whereIn('status', [
+                PurchaseOrderStatus::Ordered,
+                PurchaseOrderStatus::PartiallyReceived,
+            ])
+            ->count();
+
+        return view('livewire.dashboard', [
+            'metrics' => $metrics,
+            'outstandingPurchaseOrders' => $outstandingPurchaseOrders,
+            'inventoryValueDisplay' => $display->money($metrics['inventory_value_at_cost']),
+        ])->layoutData(['header' => 'Dashboard']);
     }
 }

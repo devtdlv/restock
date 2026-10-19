@@ -5,7 +5,9 @@ namespace App\Livewire\Reports;
 use App\Enums\PurchaseOrderStatus;
 use App\Models\Supplier;
 use App\Services\Reports\PurchasingReportService;
+use App\Services\Settings\SettingsService;
 use App\Support\CsvExporter;
+use App\Support\AppDisplay;
 use Livewire\Attributes\Layout;
 use Livewire\Attributes\Title;
 use Livewire\Attributes\Url;
@@ -78,19 +80,29 @@ class Purchasing extends Component
         );
     }
 
-    public function render(PurchasingReportService $reportService)
+    public function render(PurchasingReportService $reportService, SettingsService $settings, AppDisplay $display)
     {
         $dateFrom = $this->dateFrom !== '' ? $this->dateFrom : null;
         $dateTo = $this->dateTo !== '' ? $this->dateTo : null;
         $supplierId = $this->supplierId !== '' ? (int) $this->supplierId : null;
         $status = $this->status !== '' ? $this->status : null;
+        $summary = $reportService->summary($dateFrom, $dateTo, $supplierId, $status, $this->search);
 
         return view('livewire.reports.purchasing', [
-            'summary' => $reportService->summary($dateFrom, $dateTo, $supplierId, $status, $this->search),
-            'orders' => $reportService->ordersPaginated($dateFrom, $dateTo, $supplierId, $status, $this->search),
+            'summary' => $summary,
+            'committedOrderedValueDisplay' => $display->money($summary['committed_ordered_value']),
+            'orders' => $reportService->ordersPaginated(
+                $dateFrom,
+                $dateTo,
+                $supplierId,
+                $status,
+                $this->search,
+                $settings->defaultPerPage(),
+            ),
             'supplierSummary' => $reportService->supplierSummary($dateFrom, $dateTo, $supplierId, $status, $this->search),
             'suppliers' => Supplier::query()->orderBy('name')->get(['id', 'name', 'code']),
             'statuses' => PurchaseOrderStatus::cases(),
+            'display' => $display,
         ])->layoutData(['header' => 'Purchasing Report']);
     }
 }

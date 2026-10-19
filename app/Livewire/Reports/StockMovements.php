@@ -5,6 +5,8 @@ namespace App\Livewire\Reports;
 use App\Enums\StockMovementType;
 use App\Models\Product;
 use App\Services\Reports\StockMovementReportService;
+use App\Services\Settings\SettingsService;
+use App\Support\AppDisplay;
 use App\Support\CsvExporter;
 use Livewire\Attributes\Layout;
 use Livewire\Attributes\Title;
@@ -69,17 +71,22 @@ class StockMovements extends Component
         );
     }
 
-    public function render(StockMovementReportService $reportService)
-    {
+    public function render(
+        StockMovementReportService $reportService,
+        SettingsService $settings,
+        AppDisplay $display,
+    ) {
         return view('livewire.reports.stock-movements', [
             'movements' => $reportService->paginated(
                 $this->dateFrom !== '' ? $this->dateFrom : null,
                 $this->dateTo !== '' ? $this->dateTo : null,
                 $this->productId !== '' ? (int) $this->productId : null,
                 $this->type !== '' ? $this->type : null,
+                $settings->defaultPerPage(),
             ),
             'products' => Product::query()->orderBy('name')->get(['id', 'name', 'sku']),
             'movementTypes' => StockMovementType::cases(),
+            'display' => $display,
         ])->layoutData(['header' => 'Stock Movement Report']);
     }
 }

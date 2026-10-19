@@ -144,7 +144,7 @@
 
                     <div class="mt-4 flex justify-end text-sm">
                         <div class="rounded-lg bg-slate-50 px-4 py-2 font-medium text-slate-800">
-                            Grand total: {{ $formGrandTotal }}
+                            Grand total: {{ $display->money($formGrandTotal) }}
                         </div>
                     </div>
                 </div>
@@ -214,10 +214,10 @@
                                     @endif
                                 </td>
                                 <td class="whitespace-nowrap px-4 py-3 text-slate-600">
-                                    {{ $order->order_date?->format('Y-m-d') }}
+                                    {{ $display->date($order->order_date) }}
                                 </td>
                                 <td class="whitespace-nowrap px-4 py-3 text-slate-600">
-                                    {{ $order->expected_delivery_date?->format('Y-m-d') ?: '—' }}
+                                    {{ $order->expected_delivery_date ? $display->date($order->expected_delivery_date) : '—' }}
                                 </td>
                                 <td class="px-4 py-3">
                                     <span class="inline-flex rounded-md px-2 py-1 text-[11px] font-medium {{ $statusClasses }}">
@@ -225,7 +225,7 @@
                                     </span>
                                 </td>
                                 <td class="whitespace-nowrap px-4 py-3 text-slate-700">
-                                    {{ $order->totalAmount() }}
+                                    {{ $display->money($order->totalAmount()) }}
                                 </td>
                                 <td class="px-4 py-3 text-slate-600">
                                     {{ $receivedQty }} / {{ $orderedQty }}

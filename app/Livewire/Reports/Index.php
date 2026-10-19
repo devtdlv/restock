@@ -3,6 +3,7 @@
 namespace App\Livewire\Reports;
 
 use App\Services\Reports\InventoryReportService;
+use App\Support\AppDisplay;
 use Livewire\Attributes\Layout;
 use Livewire\Attributes\Title;
 use Livewire\Component;
@@ -11,10 +12,13 @@ use Livewire\Component;
 #[Title('Reports - StockPilot')]
 class Index extends Component
 {
-    public function render(InventoryReportService $inventoryReports)
+    public function render(InventoryReportService $inventoryReports, AppDisplay $display)
     {
+        $metrics = $inventoryReports->overviewMetrics();
+
         return view('livewire.reports.index', [
-            'metrics' => $inventoryReports->overviewMetrics(),
+            'metrics' => $metrics,
+            'inventoryValueDisplay' => $display->money($metrics['inventory_value_at_cost']),
             'sections' => [
                 [
                     'title' => 'Low Stock Report',

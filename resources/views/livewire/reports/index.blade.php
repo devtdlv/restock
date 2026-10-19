@@ -28,7 +28,7 @@
             </div>
             <div class="rounded-lg border border-slate-200 bg-slate-50 p-4">
                 <dt class="text-xs font-medium uppercase tracking-wide text-slate-500">Inventory value at cost (active)</dt>
-                <dd class="mt-2 text-2xl font-semibold text-slate-900">{{ $metrics['inventory_value_at_cost'] }}</dd>
+                <dd class="mt-2 text-2xl font-semibold text-slate-900">{{ $inventoryValueDisplay }}</dd>
             </div>
             <div class="rounded-lg border border-slate-200 bg-slate-50 p-4">
                 <dt class="text-xs font-medium uppercase tracking-wide text-slate-500">Low-stock products (active)</dt>

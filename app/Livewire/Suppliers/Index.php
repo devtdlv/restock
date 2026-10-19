@@ -175,7 +175,7 @@ class Index extends Component
         $this->resetPage();
     }
 
-    public function render()
+    public function render(\App\Services\Settings\SettingsService $settings)
     {
         $suppliers = Supplier::query()
             ->when($this->search !== '', function ($query) {
@@ -189,7 +189,7 @@ class Index extends Component
                 });
             })
             ->orderBy('name')
-            ->paginate(10);
+            ->paginate($settings->defaultPerPage());
 
         return view('livewire.suppliers.index', [
             'suppliers' => $suppliers,

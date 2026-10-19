@@ -92,7 +92,7 @@ class InventoryOverviewTest extends TestCase
             ->test(Index::class)
             ->assertSee('Active products', false)
             ->assertSee('active products only', false)
-            ->assertSee('66.00', false)
+            ->assertSee('$66.00', false)
             ->assertSee('14', false);
     }
 

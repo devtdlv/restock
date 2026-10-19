@@ -3,6 +3,7 @@
 namespace App\Livewire\Reports;
 
 use App\Services\Reports\InventoryReportService;
+use App\Services\Settings\SettingsService;
 use App\Support\CsvExporter;
 use Livewire\Attributes\Layout;
 use Livewire\Attributes\Title;
@@ -46,10 +47,14 @@ class LowStock extends Component
         );
     }
 
-    public function render(InventoryReportService $inventoryReports)
+    public function render(InventoryReportService $inventoryReports, SettingsService $settings)
     {
         return view('livewire.reports.low-stock', [
-            'products' => $inventoryReports->lowStockPaginated($this->search, $this->status),
+            'products' => $inventoryReports->lowStockPaginated(
+                $this->search,
+                $this->status,
+                $settings->defaultPerPage(),
+            ),
             'inventoryReports' => $inventoryReports,
         ])->layoutData(['header' => 'Low Stock Report']);
     }

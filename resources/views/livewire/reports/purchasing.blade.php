@@ -74,7 +74,7 @@
             ['Partially received', $summary['partially_received_orders']],
             ['Fully received', $summary['received_orders']],
             ['Cancelled', $summary['cancelled_orders']],
-            ['Committed ordered value', $summary['committed_ordered_value']],
+            ['Committed ordered value', $committedOrderedValueDisplay],
             ['Committed received qty', $summary['committed_received_quantity']],
             ['Committed outstanding qty', $summary['committed_outstanding_quantity']],
         ] as [$label, $value])
@@ -119,9 +119,9 @@
                                 <td class="px-4 py-3 font-medium text-slate-900">{{ $order->number }}</td>
                                 <td class="px-4 py-3 text-slate-700">{{ $order->supplier?->name ?? 'Unavailable' }}</td>
                                 <td class="px-4 py-3 text-slate-700">{{ $order->status->label() }}</td>
-                                <td class="whitespace-nowrap px-4 py-3 text-slate-600">{{ $order->order_date?->format('Y-m-d') }}</td>
-                                <td class="whitespace-nowrap px-4 py-3 text-slate-600">{{ $order->expected_delivery_date?->format('Y-m-d') ?: '—' }}</td>
-                                <td class="px-4 py-3 text-slate-700">{{ $order->totalAmount() }}</td>
+                                <td class="whitespace-nowrap px-4 py-3 text-slate-600">{{ $display->date($order->order_date) }}</td>
+                                <td class="whitespace-nowrap px-4 py-3 text-slate-600">{{ $order->expected_delivery_date ? $display->date($order->expected_delivery_date) : '—' }}</td>
+                                <td class="px-4 py-3 text-slate-700">{{ $display->money($order->totalAmount()) }}</td>
                                 <td class="px-4 py-3 text-slate-700">{{ $receivedQty }}</td>
                                 <td class="px-4 py-3 text-slate-700">{{ max(0, $orderedQty - $receivedQty) }}</td>
                             </tr>
@@ -163,7 +163,7 @@
                                 <td class="px-4 py-3 font-medium text-slate-900">{{ $row['supplier_name'] }}</td>
                                 <td class="px-4 py-3 font-mono text-xs text-slate-600">{{ $row['supplier_code'] }}</td>
                                 <td class="px-4 py-3 text-slate-700">{{ $row['order_count'] }}</td>
-                                <td class="px-4 py-3 text-slate-700">{{ $row['committed_ordered_value'] }}</td>
+                                <td class="px-4 py-3 text-slate-700">{{ $display->money($row['committed_ordered_value']) }}</td>
                             </tr>
                         @endforeach
                     </tbody>
