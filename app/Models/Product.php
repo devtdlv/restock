@@ -28,6 +28,7 @@ class Product extends Model
         'cost_price',
         'reorder_level',
         'is_active',
+        'image_path',
     ];
 
     /**
@@ -42,6 +43,17 @@ class Product extends Model
             'reorder_level' => 'integer',
             'is_active' => 'boolean',
         ];
+    }
+
+    public function hasImage(): bool
+    {
+        return filled($this->image_path)
+            && app(\App\Services\Catalog\ProductImageService::class)->exists($this->image_path);
+    }
+
+    public function imageUrl(): ?string
+    {
+        return app(\App\Services\Catalog\ProductImageService::class)->url($this->image_path);
     }
 
     public function categories(): BelongsToMany

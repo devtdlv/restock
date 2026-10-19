@@ -4,6 +4,7 @@ namespace App\Livewire\Products;
 
 use App\Enums\StockMovementType;
 use App\Exceptions\InsufficientStockException;
+use App\Exceptions\InvalidPurchaseOrderException;
 use App\Exceptions\InvalidStockMovementException;
 use App\Models\Category;
 use App\Models\Product;
@@ -19,12 +20,14 @@ use InvalidArgumentException;
 use Livewire\Attributes\Layout;
 use Livewire\Attributes\Title;
 use Livewire\Component;
+use Livewire\WithFileUploads;
 use Livewire\WithPagination;
 
 #[Layout('layouts.app')]
 #[Title('Products - StockPilot')]
 class Index extends Component
 {
+    use WithFileUploads;
     use WithPagination;
 
     public string $search = '';
@@ -52,6 +55,15 @@ class Index extends Component
     /** @var list<int|string> */
     public array $categoryIds = [];
 
+    /** @var mixed */
+    public $image = null;
+
+    public bool $removeImage = false;
+
+    public ?string $existingImagePath = null;
+
+    public ?string $existingImageUrl = null;
+
     public ?int $confirmingDeletionId = null;
 
     public bool $showAdjustForm = false;
@@ -61,6 +73,8 @@ class Index extends Component
     public string $adjustingProductName = '';
 
     public string $adjustingProductSku = '';
+
+    public ?string $adjustingProductImageUrl = null;
 
     public int $adjustingCurrentQuantity = 0;
 
@@ -106,6 +120,10 @@ class Index extends Component
         $this->reorder_level = (string) $product->reorder_level;
         $this->is_active = $product->is_active;
         $this->categoryIds = $product->categories->pluck('id')->map(fn ($id) => (string) $id)->all();
+        $this->existingImagePath = $product->image_path;
+        $this->existingImageUrl = $product->imageUrl();
+        $this->image = null;
+        $this->removeImage = false;
         $this->showForm = true;
         $this->confirmingDeletionId = null;
     }
@@ -113,6 +131,24 @@ class Index extends Component
     public function cancelForm(): void
     {
         $this->resetForm();
+    }
+
+    public function updatedImage(): void
+    {
+        $this->removeImage = false;
+        $this->validateOnly('image', $this->imageRules());
+    }
+
+    public function clearSelectedImage(): void
+    {
+        $this->image = null;
+    }
+
+    public function removeExistingImage(): void
+    {
+        $this->ensureAuthenticated();
+        $this->removeImage = true;
+        $this->image = null;
     }
 
     public function save(ProductCatalogService $products): void
@@ -135,6 +171,7 @@ class Index extends Component
             'is_active' => ['boolean'],
             'categoryIds' => ['array'],
             'categoryIds.*' => ['integer', 'exists:categories,id'],
+            'image' => $this->imageRules()['image'],
         ];
 
         if ($this->productId === null) {
@@ -162,7 +199,14 @@ class Index extends Component
         try {
             if ($this->productId) {
                 $product = Product::query()->findOrFail($this->productId);
-                $products->update($product, $attributes, $categoryIds, auth()->user());
+                $products->update(
+                    $product,
+                    $attributes,
+                    $categoryIds,
+                    auth()->user(),
+                    $this->image,
+                    $this->removeImage && $this->image === null,
+                );
                 $this->statusMessage = 'Product updated successfully.';
             } else {
                 $products->create(
@@ -170,6 +214,7 @@ class Index extends Component
                     $categoryIds,
                     auth()->user(),
                     (int) $validated['quantity_on_hand'],
+                    $this->image,
                 );
                 $this->statusMessage = 'Product created successfully.';
             }
@@ -195,6 +240,7 @@ class Index extends Component
         $this->adjustingProductId = $product->id;
         $this->adjustingProductName = $product->name;
         $this->adjustingProductSku = $product->sku;
+        $this->adjustingProductImageUrl = $product->imageUrl();
         $this->adjustingCurrentQuantity = (int) $product->quantity_on_hand;
         $this->adjustmentType = StockMovementType::StockIn->value;
         $this->adjustmentQuantity = '1';
@@ -297,6 +343,10 @@ class Index extends Component
             $product = Product::query()->findOrFail($this->confirmingDeletionId);
             $products->delete($product, auth()->user());
             $this->statusMessage = 'Product deleted successfully.';
+        } catch (InvalidPurchaseOrderException $exception) {
+            $this->errorMessage = $exception->getMessage();
+
+            return;
         } catch (QueryException) {
             $this->errorMessage = 'Unable to delete the product right now. Please try again.';
 
@@ -337,6 +387,9 @@ class Index extends Component
             'sku',
             'description',
             'categoryIds',
+            'image',
+            'existingImagePath',
+            'existingImageUrl',
         ]);
 
         $this->unit_price = '0.00';
@@ -344,7 +397,18 @@ class Index extends Component
         $this->quantity_on_hand = '0';
         $this->reorder_level = (string) app(SettingsService::class)->defaultReorderLevel();
         $this->is_active = true;
+        $this->removeImage = false;
         $this->resetValidation();
+    }
+
+    /**
+     * @return array{image: list<string>}
+     */
+    protected function imageRules(): array
+    {
+        return [
+            'image' => ['nullable', 'image', 'mimes:jpeg,jpg,png,webp', 'max:2048'],
+        ];
     }
 
     protected function resetAdjustmentForm(): void
@@ -354,6 +418,7 @@ class Index extends Component
             'adjustingProductId',
             'adjustingProductName',
             'adjustingProductSku',
+            'adjustingProductImageUrl',
             'adjustmentReason',
         ]);
 

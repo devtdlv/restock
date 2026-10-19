@@ -230,8 +230,13 @@
                     @foreach ($order->items as $item)
                         <tr wire:key="detail-item-{{ $item->id }}">
                             <td class="px-4 py-3">
-                                <div class="font-medium text-slate-900">{{ $item->product?->name ?? 'Product #'.$item->product_id }}</div>
-                                <div class="text-xs text-slate-500">{{ $item->product?->sku }}</div>
+                                <div class="flex items-center gap-3">
+                                    <x-product-image :product="$item->product" size="sm" :alt="$item->product?->name ?? 'Product'" />
+                                    <div>
+                                        <div class="font-medium text-slate-900">{{ $item->product?->name ?? 'Product #'.$item->product_id }}</div>
+                                        <div class="text-xs text-slate-500">{{ $item->product?->sku }}</div>
+                                    </div>
+                                </div>
                             </td>
                             <td class="px-4 py-3 text-slate-700">{{ $item->ordered_quantity }}</td>
                             <td class="px-4 py-3 text-slate-700">{{ $item->received_quantity }}</td>

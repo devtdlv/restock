@@ -67,8 +67,13 @@
                                     {{ $display->dateTime($movement->created_at) }}
                                 </td>
                                 <td class="px-4 py-3">
-                                    <div class="font-medium text-slate-900">{{ $movement->product?->name ?? 'Deleted product' }}</div>
-                                    <div class="font-mono text-xs text-slate-500">{{ $movement->product?->sku ?? '-' }}</div>
+                                    <div class="flex items-center gap-3">
+                                        <x-product-image :product="$movement->product" size="xs" :alt="$movement->product?->name ?? 'Product'" />
+                                        <div>
+                                            <div class="font-medium text-slate-900">{{ $movement->product?->name ?? 'Deleted product' }}</div>
+                                            <div class="font-mono text-xs text-slate-500">{{ $movement->product?->sku ?? '-' }}</div>
+                                        </div>
+                                    </div>
                                 </td>
                                 <td class="px-4 py-3">
                                     <span class="inline-flex rounded-md bg-slate-100 px-2 py-1 text-[11px] font-medium text-slate-700">

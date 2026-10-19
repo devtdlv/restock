@@ -82,6 +82,7 @@ class AuditPresenter
             'default_per_page' => 'Default items per page',
             'date_format' => 'Date format',
             'currency_symbol' => 'Currency symbol',
+            'image_path' => 'Product image',
             default => Str::of($field)->replace('_', ' ')->title()->toString(),
         };
     }

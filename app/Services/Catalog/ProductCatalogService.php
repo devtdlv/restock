@@ -8,87 +8,166 @@ use App\Models\Product;
 use App\Models\User;
 use App\Services\Audit\AuditLogger;
 use App\Services\Stock\StockMovementService;
+use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\DB;
 use InvalidArgumentException;
+use Livewire\Features\SupportFileUploads\TemporaryUploadedFile;
+use Throwable;
 
 /**
  * Creates, updates, and deletes products with audit logging and controlled stock.
  *
  * quantity_on_hand is never mass-assigned from edit payloads. Opening stock on
  * create is applied exclusively through StockMovementService.
+ * Product images are stored on the public disk; only relative paths are persisted.
  */
 class ProductCatalogService
 {
     public function __construct(
         protected AuditLogger $auditLogger,
         protected StockMovementService $stockMovements,
+        protected ProductImageService $images,
     ) {}
 
     /**
      * @param  array<string, mixed>  $attributes
      * @param  list<int>  $categoryIds
      */
-    public function create(array $attributes, array $categoryIds, User $user, int $openingStock = 0): Product
-    {
+    public function create(
+        array $attributes,
+        array $categoryIds,
+        User $user,
+        int $openingStock = 0,
+        UploadedFile|TemporaryUploadedFile|null $image = null,
+    ): Product {
         if ($openingStock < 0) {
             throw new InvalidArgumentException('Opening stock cannot be negative.');
         }
 
-        return DB::transaction(function () use ($attributes, $categoryIds, $user, $openingStock) {
-            $product = Product::query()->create($this->attributesForPersistence($attributes, includeQuantity: false));
+        $storedPath = null;
 
-            $this->stockMovements->recordOpeningStock($product, $openingStock, $user);
+        try {
+            if ($image !== null) {
+                $storedPath = $this->images->store($image);
+            }
 
-            $product->categories()->sync($this->normalizeCategoryIds($categoryIds));
-            $product->refresh()->load('categories');
+            return DB::transaction(function () use ($attributes, $categoryIds, $user, $openingStock, $storedPath) {
+                $payload = $this->attributesForPersistence($attributes, includeQuantity: false);
+                if ($storedPath !== null) {
+                    $payload['image_path'] = $storedPath;
+                }
 
-            $this->auditLogger->record(
-                AuditAction::Created,
-                $product,
-                null,
-                $this->snapshot($product),
-                $user,
-            );
+                $product = Product::query()->create($payload);
 
-            return $product;
-        });
+                $this->stockMovements->recordOpeningStock($product, $openingStock, $user);
+
+                $product->categories()->sync($this->normalizeCategoryIds($categoryIds));
+                $product->refresh()->load('categories');
+
+                $this->auditLogger->record(
+                    AuditAction::Created,
+                    $product,
+                    null,
+                    $this->snapshot($product),
+                    $user,
+                );
+
+                return $product;
+            });
+        } catch (Throwable $exception) {
+            if ($storedPath !== null) {
+                $this->images->delete($storedPath);
+            }
+
+            throw $exception;
+        }
     }
 
     /**
      * @param  array<string, mixed>  $attributes
      * @param  list<int>  $categoryIds
      */
-    public function update(Product $product, array $attributes, array $categoryIds, User $user): Product
-    {
-        return DB::transaction(function () use ($product, $attributes, $categoryIds, $user) {
-            /** @var Product $locked */
-            $locked = Product::query()
-                ->whereKey($product->getKey())
-                ->lockForUpdate()
-                ->firstOrFail();
+    public function update(
+        Product $product,
+        array $attributes,
+        array $categoryIds,
+        User $user,
+        UploadedFile|TemporaryUploadedFile|null $image = null,
+        bool $removeImage = false,
+    ): Product {
+        $newPath = null;
+        $oldPath = null;
 
-            $locked->load('categories');
-            $before = $this->snapshot($locked);
+        try {
+            if ($image !== null) {
+                $newPath = $this->images->store($image);
+            }
 
-            $locked->update($this->attributesForPersistence($attributes, includeQuantity: false));
-            $locked->categories()->sync($this->normalizeCategoryIds($categoryIds));
-            $locked->refresh()->load('categories');
-
-            $this->auditLogger->record(
-                AuditAction::Updated,
-                $locked,
-                $before,
-                $this->snapshot($locked),
+            $updated = DB::transaction(function () use (
+                $product,
+                $attributes,
+                $categoryIds,
                 $user,
-            );
+                $newPath,
+                $removeImage,
+                &$oldPath,
+            ) {
+                /** @var Product $locked */
+                $locked = Product::query()
+                    ->whereKey($product->getKey())
+                    ->lockForUpdate()
+                    ->firstOrFail();
 
-            return $locked;
-        });
+                $locked->load('categories');
+                $before = $this->snapshot($locked);
+                $oldPath = $locked->image_path;
+
+                $payload = $this->attributesForPersistence($attributes, includeQuantity: false);
+
+                if ($newPath !== null) {
+                    $payload['image_path'] = $newPath;
+                } elseif ($removeImage) {
+                    $payload['image_path'] = null;
+                }
+
+                $locked->update($payload);
+                $locked->categories()->sync($this->normalizeCategoryIds($categoryIds));
+                $locked->refresh()->load('categories');
+
+                $this->auditLogger->record(
+                    AuditAction::Updated,
+                    $locked,
+                    $before,
+                    $this->snapshot($locked),
+                    $user,
+                );
+
+                return $locked;
+            });
+
+            if ($newPath !== null && $oldPath !== null && $oldPath !== $newPath) {
+                $this->images->delete($oldPath);
+            }
+
+            if ($newPath === null && $removeImage && $oldPath !== null) {
+                $this->images->delete($oldPath);
+            }
+
+            return $updated;
+        } catch (Throwable $exception) {
+            if ($newPath !== null) {
+                $this->images->delete($newPath);
+            }
+
+            throw $exception;
+        }
     }
 
     public function delete(Product $product, User $user): void
     {
-        DB::transaction(function () use ($product, $user) {
+        $imagePath = null;
+
+        DB::transaction(function () use ($product, $user, &$imagePath) {
             /** @var Product $locked */
             $locked = Product::query()
                 ->whereKey($product->getKey())
@@ -97,6 +176,7 @@ class ProductCatalogService
 
             $locked->load('categories');
             $before = $this->snapshot($locked);
+            $imagePath = $locked->image_path;
 
             if ($locked->purchaseOrderItems()->exists()) {
                 throw new InvalidPurchaseOrderException(
@@ -114,6 +194,8 @@ class ProductCatalogService
                 $user,
             );
         });
+
+        $this->images->delete($imagePath);
     }
 
     /**
@@ -132,6 +214,7 @@ class ProductCatalogService
             'quantity_on_hand' => (int) $product->quantity_on_hand,
             'reorder_level' => (int) $product->reorder_level,
             'is_active' => (bool) $product->is_active,
+            'image_path' => $product->image_path,
             'category_ids' => $product->categories
                 ->pluck('id')
                 ->map(fn ($id) => (int) $id)
@@ -155,6 +238,7 @@ class ProductCatalogService
             'cost_price',
             'reorder_level',
             'is_active',
+            'image_path',
         ];
 
         if ($includeQuantity) {

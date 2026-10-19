@@ -134,8 +134,69 @@
                     <label for="product_is_active" class="text-sm text-slate-700">Active</label>
                 </div>
 
+                <div class="md:col-span-2 rounded-lg border border-slate-200 bg-slate-50/70 p-4">
+                    <x-input-label for="product_image" value="Product image" />
+                    <p class="mt-1 text-xs text-slate-500">JPEG, PNG, or WebP. Maximum 2 MB. SVG files are not allowed.</p>
+
+                    <div class="mt-4 flex flex-col gap-4 sm:flex-row sm:items-start">
+                        <div class="shrink-0">
+                            @php
+                                $selectedPreviewUrl = null;
+                                if ($image && method_exists($image, 'isPreviewable') && $image->isPreviewable()) {
+                                    try {
+                                        $selectedPreviewUrl = $image->temporaryUrl();
+                                    } catch (\Throwable) {
+                                        $selectedPreviewUrl = null;
+                                    }
+                                }
+                            @endphp
+                            @if ($selectedPreviewUrl)
+                                <img
+                                    src="{{ $selectedPreviewUrl }}"
+                                    alt="Selected product image preview"
+                                    class="h-24 w-24 rounded-lg border border-slate-200 object-cover"
+                                >
+                            @elseif ($existingImageUrl && ! $removeImage)
+                                <x-product-image :url="$existingImageUrl" :alt="$name !== '' ? $name : 'Existing product image'" size="lg" />
+                            @else
+                                <x-product-image size="lg" alt="Product image placeholder" />
+                            @endif
+                        </div>
+
+                        <div class="min-w-0 flex-1 space-y-3">
+                            <input
+                                wire:model="image"
+                                id="product_image"
+                                type="file"
+                                accept="image/jpeg,image/png,image/webp,.jpg,.jpeg,.png,.webp"
+                                class="block w-full text-sm text-slate-600 file:mr-3 file:rounded-lg file:border-0 file:bg-brand-50 file:px-3 file:py-2 file:text-sm file:font-medium file:text-brand-800 hover:file:bg-brand-100"
+                            >
+                            <div wire:loading wire:target="image" class="text-sm text-slate-500" role="status">
+                                Uploading image preview…
+                            </div>
+                            <x-input-error :messages="$errors->get('image')" />
+
+                            <div class="flex flex-wrap gap-2">
+                                @if ($image)
+                                    <x-secondary-button type="button" class="w-auto" wire:click="clearSelectedImage">
+                                        Clear selection
+                                    </x-secondary-button>
+                                @endif
+                                @if ($existingImageUrl && ! $removeImage && ! $image)
+                                    <x-secondary-button type="button" class="w-auto" wire:click="removeExistingImage">
+                                        Remove image
+                                    </x-secondary-button>
+                                @endif
+                                @if ($removeImage && ! $image)
+                                    <p class="text-xs text-amber-700">Image will be removed when you save.</p>
+                                @endif
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
                 <div class="md:col-span-2 flex flex-wrap gap-3">
-                    <x-primary-button class="w-auto" wire:loading.attr="disabled">
+                    <x-primary-button class="w-auto" wire:loading.attr="disabled" wire:target="save,image">
                         <span wire:loading.remove wire:target="save">{{ $productId ? 'Save changes' : 'Create product' }}</span>
                         <span wire:loading wire:target="save">Saving…</span>
                     </x-primary-button>
@@ -152,10 +213,13 @@
                 {{ $adjustingProductName }}
                 <span class="font-mono text-xs text-slate-400">({{ $adjustingProductSku }})</span>
             </p>
-            <p class="mt-3 text-sm text-slate-700">
-                Current quantity:
-                <span class="font-semibold">{{ $adjustingCurrentQuantity }}</span>
-            </p>
+            <div class="mt-4 flex items-center gap-3">
+                <x-product-image :url="$adjustingProductImageUrl" size="sm" :alt="$adjustingProductName" />
+                <p class="text-sm text-slate-700">
+                    Current quantity:
+                    <span class="font-semibold">{{ $adjustingCurrentQuantity }}</span>
+                </p>
+            </div>
 
             <form wire:submit="applyStockAdjustment" class="mt-6 grid gap-4 md:grid-cols-2">
                 <div>
@@ -245,6 +309,7 @@
                 <table class="min-w-full divide-y divide-slate-200 text-left text-sm">
                     <thead class="bg-slate-50 text-xs uppercase tracking-wide text-slate-500">
                         <tr>
+                            <th class="px-4 py-3 font-medium">Image</th>
                             <th class="px-4 py-3 font-medium">Product</th>
                             <th class="px-4 py-3 font-medium">SKU</th>
                             <th class="px-4 py-3 font-medium">Price</th>
@@ -257,6 +322,9 @@
                     <tbody class="divide-y divide-slate-100">
                         @foreach ($products as $product)
                             <tr wire:key="product-{{ $product->id }}" class="hover:bg-slate-50/80">
+                                <td class="px-4 py-3">
+                                    <x-product-image :product="$product" size="sm" />
+                                </td>
                                 <td class="px-4 py-3">
                                     <div class="font-medium text-slate-900">{{ $product->name }}</div>
                                     @if ($product->description)
