@@ -6,6 +6,7 @@ use App\Enums\AuditAction;
 use App\Models\AuditLog;
 use App\Models\Category;
 use App\Models\Product;
+use App\Models\Supplier;
 use Illuminate\Support\Str;
 
 /**
@@ -35,6 +36,7 @@ class AuditPresenter
         return [
             Product::class => 'Product',
             Category::class => 'Category',
+            Supplier::class => 'Supplier',
         ];
     }
 
@@ -55,6 +57,7 @@ class AuditPresenter
             'cost_price' => 'Cost price',
             'quantity_on_hand' => 'Quantity on hand',
             'reorder_level' => 'Reorder level',
+            'contact_person' => 'Contact person',
             'is_active' => 'Active',
             default => Str::of($field)->replace('_', ' ')->title()->toString(),
         };

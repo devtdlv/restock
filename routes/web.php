@@ -10,6 +10,7 @@ use App\Livewire\Categories\Index as CategoriesIndex;
 use App\Livewire\Dashboard;
 use App\Livewire\Products\Index as ProductsIndex;
 use App\Livewire\StockMovements\Index as StockMovementsIndex;
+use App\Livewire\Suppliers\Index as SuppliersIndex;
 use Illuminate\Support\Facades\Route;
 
 Route::redirect('/', '/dashboard');
@@ -27,5 +28,6 @@ Route::middleware('auth')->group(function () {
     Route::get('products', ProductsIndex::class)->name('products.index');
     Route::get('stock-movements', StockMovementsIndex::class)->name('stock-movements.index');
     Route::get('audit-logs', AuditLogsIndex::class)->name('audit-logs.index');
+    Route::get('suppliers', SuppliersIndex::class)->name('suppliers.index');
     Route::post('logout', LogoutController::class)->name('logout');
 });
