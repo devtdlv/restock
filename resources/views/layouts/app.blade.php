@@ -49,7 +49,7 @@
                             ['label' => 'Stock Movements', 'route' => 'stock-movements.index', 'ready' => true],
                             ['label' => 'Audit Logs', 'route' => 'audit-logs.index', 'ready' => true],
                             ['label' => 'Suppliers', 'route' => 'suppliers.index', 'ready' => true],
-                            ['label' => 'Purchase Orders', 'route' => null, 'ready' => false],
+                            ['label' => 'Purchase Orders', 'route' => 'purchase-orders.index', 'ready' => true],
                             ['label' => 'Reports', 'route' => null, 'ready' => false],
                             ['label' => 'Settings', 'route' => null, 'ready' => false],
                         ];

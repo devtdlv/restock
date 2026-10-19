@@ -10,6 +10,8 @@ use App\Livewire\Categories\Index as CategoriesIndex;
 use App\Livewire\Dashboard;
 use App\Livewire\Products\Index as ProductsIndex;
 use App\Livewire\StockMovements\Index as StockMovementsIndex;
+use App\Livewire\PurchaseOrders\Index as PurchaseOrdersIndex;
+use App\Livewire\PurchaseOrders\Show as PurchaseOrdersShow;
 use App\Livewire\Suppliers\Index as SuppliersIndex;
 use Illuminate\Support\Facades\Route;
 
@@ -29,5 +31,7 @@ Route::middleware('auth')->group(function () {
     Route::get('stock-movements', StockMovementsIndex::class)->name('stock-movements.index');
     Route::get('audit-logs', AuditLogsIndex::class)->name('audit-logs.index');
     Route::get('suppliers', SuppliersIndex::class)->name('suppliers.index');
+    Route::get('purchase-orders', PurchaseOrdersIndex::class)->name('purchase-orders.index');
+    Route::get('purchase-orders/{purchaseOrder}', PurchaseOrdersShow::class)->name('purchase-orders.show');
     Route::post('logout', LogoutController::class)->name('logout');
 });

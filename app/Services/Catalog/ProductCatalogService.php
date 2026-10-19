@@ -3,6 +3,7 @@
 namespace App\Services\Catalog;
 
 use App\Enums\AuditAction;
+use App\Exceptions\InvalidPurchaseOrderException;
 use App\Models\Product;
 use App\Models\User;
 use App\Services\Audit\AuditLogger;
@@ -96,6 +97,12 @@ class ProductCatalogService
 
             $locked->load('categories');
             $before = $this->snapshot($locked);
+
+            if ($locked->purchaseOrderItems()->exists()) {
+                throw new InvalidPurchaseOrderException(
+                    'Products referenced by purchase orders cannot be deleted.'
+                );
+            }
 
             $locked->delete();
 

@@ -6,6 +6,8 @@ use App\Enums\AuditAction;
 use App\Models\AuditLog;
 use App\Models\Category;
 use App\Models\Product;
+use App\Models\PurchaseOrder;
+use App\Models\PurchaseOrderReceipt;
 use App\Models\Supplier;
 use Illuminate\Support\Str;
 
@@ -37,6 +39,8 @@ class AuditPresenter
             Product::class => 'Product',
             Category::class => 'Category',
             Supplier::class => 'Supplier',
+            PurchaseOrder::class => 'Purchase Order',
+            PurchaseOrderReceipt::class => 'Purchase Order Receipt',
         ];
     }
 
@@ -58,6 +62,15 @@ class AuditPresenter
             'quantity_on_hand' => 'Quantity on hand',
             'reorder_level' => 'Reorder level',
             'contact_person' => 'Contact person',
+            'supplier_id' => 'Supplier',
+            'order_date' => 'Order date',
+            'expected_delivery_date' => 'Expected delivery date',
+            'ordered_quantity' => 'Ordered quantity',
+            'received_quantity' => 'Received quantity',
+            'unit_cost' => 'Unit cost',
+            'total_amount' => 'Total amount',
+            'receipt_key' => 'Receipt key',
+            'purchase_order_id' => 'Purchase order',
             'is_active' => 'Active',
             default => Str::of($field)->replace('_', ' ')->title()->toString(),
         };
@@ -77,7 +90,7 @@ class AuditPresenter
     public function entityName(AuditLog $audit): ?string
     {
         $values = $this->safeValues($audit->after_values ?: $audit->before_values);
-        $name = $values['name'] ?? null;
+        $name = $values['name'] ?? $values['number'] ?? $values['receipt_key'] ?? null;
 
         return is_string($name) && $name !== '' ? $name : null;
     }

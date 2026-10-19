@@ -4,13 +4,13 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 /**
  * Vendor contact record for inventory purchasing.
  *
- * Future purchase orders should reference this model via supplier_id.
- * When that relationship exists, hard deletes should be blocked while
- * related purchase orders remain (restrictOnDelete or an explicit service guard).
+ * Purchase orders reference this model via supplier_id with restrictOnDelete
+ * so historical orders remain intact.
  */
 class Supplier extends Model
 {
@@ -39,5 +39,10 @@ class Supplier extends Model
         return [
             'is_active' => 'boolean',
         ];
+    }
+
+    public function purchaseOrders(): HasMany
+    {
+        return $this->hasMany(PurchaseOrder::class);
     }
 }

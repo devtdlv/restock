@@ -69,17 +69,56 @@ class AuditLogger
 
         $clean = collect($values)
             ->reject(fn ($value, $key) => in_array((string) $key, $hidden, true))
-            ->map(function ($value) {
-                if (is_array($value)) {
-                    return array_values(array_map(fn ($item) => is_int($item) || ctype_digit((string) $item) ? (int) $item : $item, $value));
-                }
-
-                return $value;
-            })
+            ->map(fn ($value) => $this->sanitizeValue($value))
             ->sortKeys()
             ->all();
 
         return $clean;
+    }
+
+    protected function sanitizeValue(mixed $value): mixed
+    {
+        if (! is_array($value)) {
+            return $value;
+        }
+
+        if ($value === []) {
+            return [];
+        }
+
+        $isList = array_is_list($value);
+
+        if ($isList && $this->isScalarList($value)) {
+            return array_values(array_map(
+                fn ($item) => is_int($item) || (is_string($item) && ctype_digit($item))
+                    ? (int) $item
+                    : $item,
+                $value,
+            ));
+        }
+
+        if ($isList) {
+            return array_values(array_map(
+                fn ($item) => is_array($item) ? $this->sanitize($item) : $this->sanitizeValue($item),
+                $value,
+            ));
+        }
+
+        return $this->sanitize($value);
+    }
+
+    /**
+     * @param  array<int, mixed>  $value
+     */
+    protected function isScalarList(array $value): bool
+    {
+        foreach ($value as $item) {
+            if (is_array($item)) {
+                return false;
+            }
+        }
+
+        return true;
     }
 
     /**

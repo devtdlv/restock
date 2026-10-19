@@ -3,6 +3,7 @@
 namespace App\Services\Catalog;
 
 use App\Enums\AuditAction;
+use App\Exceptions\InvalidPurchaseOrderException;
 use App\Models\Supplier;
 use App\Models\User;
 use App\Services\Audit\AuditLogger;
@@ -77,7 +78,12 @@ class SupplierCatalogService
 
             $before = $this->snapshot($locked);
 
-            // When purchase orders exist, prefer DB restrictOnDelete or a pre-check here.
+            if ($locked->purchaseOrders()->exists()) {
+                throw new InvalidPurchaseOrderException(
+                    'Suppliers referenced by purchase orders cannot be deleted.'
+                );
+            }
+
             $locked->delete();
 
             $this->auditLogger->record(
