@@ -41,7 +41,7 @@ Typical use cases:
 
 ## Application screenshots
 
-Real captures from a local StockPilot session. They reflect current catalog and inventory data (including empty purchasing modules). Session email and internal IDs were masked before capture where needed. Full gallery notes: [docs/screenshots/README.md](docs/screenshots/README.md).
+Real captures from a local StockPilot session populated with the original Wireless Mouse record plus 100 `DEMO-` catalog products. Purchasing modules remain empty. Session email and internal IDs were masked before capture where needed. Full gallery notes: [docs/screenshots/README.md](docs/screenshots/README.md).
 
 ### Dashboard
 
