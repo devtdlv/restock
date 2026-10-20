@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Enums\StockLevel;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
@@ -54,6 +55,11 @@ class Product extends Model
     public function imageUrl(): ?string
     {
         return app(\App\Services\Catalog\ProductImageService::class)->url($this->image_path);
+    }
+
+    public function stockLevel(): StockLevel
+    {
+        return StockLevel::forProduct($this);
     }
 
     public function categories(): BelongsToMany

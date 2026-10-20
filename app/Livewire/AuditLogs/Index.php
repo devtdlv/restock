@@ -67,7 +67,7 @@ class Index extends Component
         $this->selectedAuditId = null;
     }
 
-    public function render(AuditPresenter $presenter)
+    public function render(AuditPresenter $presenter, \App\Support\AppDisplay $display)
     {
         $audits = AuditLog::query()
             ->with('user')
@@ -132,6 +132,7 @@ class Index extends Component
                 ->orderBy('name')
                 ->get(['id', 'name', 'email']),
             'presenter' => $presenter,
+            'display' => $display,
             'selectedAudit' => $selectedAudit,
             'selectedChanges' => $selectedChanges,
         ])->layoutData(['header' => 'Audit Logs']);

@@ -1,17 +1,16 @@
 <div class="space-y-6">
-    <div>
-        <h1 class="text-2xl font-bold tracking-tight text-slate-900">Stock Movements</h1>
-        <p class="mt-1 text-sm text-slate-500">
+    <x-page-header title="Stock Movements">
+        <x-slot:description>
             Traceable inventory history for stock in, stock out, adjustments, and legacy opening balances.
             Catalog create/update/delete history is available under
             <a href="{{ route('audit-logs.index') }}" class="font-medium text-brand-700 hover:text-brand-800" wire:navigate>Audit Logs</a>.
-        </p>
-    </div>
+        </x-slot:description>
+    </x-page-header>
 
-    <div class="rounded-xl border border-slate-200 bg-white p-4 shadow-sm sm:p-5">
+    <x-panel>
         <div class="grid gap-4 md:grid-cols-2">
             <div>
-                <label for="movement-search" class="sr-only">Search movements</label>
+                <x-input-label for="movement-search" value="Search" />
                 <x-text-input
                     wire:model.live.debounce.300ms="search"
                     id="movement-search"
@@ -20,86 +19,74 @@
                 />
             </div>
             <div>
-                <label for="movement-type" class="sr-only">Filter by type</label>
-                <select
-                    wire:model.live="type"
-                    id="movement-type"
-                    class="block w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm text-slate-900 shadow-sm focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-500/20"
-                >
+                <x-input-label for="movement-type" value="Movement type" />
+                <x-select-input wire:model.live="type" id="movement-type">
                     <option value="">All movement types</option>
                     @foreach ($movementTypes as $movementType)
                         <option value="{{ $movementType->value }}">{{ $movementType->label() }}</option>
                     @endforeach
-                </select>
+                </x-select-input>
             </div>
         </div>
-    </div>
+    </x-panel>
 
     <div class="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
         @if ($movements->isEmpty())
-            <div class="px-6 py-16 text-center">
-                <p class="text-base font-semibold text-slate-900">
-                    {{ ($search !== '' || $type !== '') ? 'No movements match your filters' : 'No stock movements yet' }}
-                </p>
-                <p class="mt-2 text-sm text-slate-500">
-                    {{ ($search !== '' || $type !== '') ? 'Try a different search or clear the type filter.' : 'Use Adjust Stock on the Products page to record inventory changes.' }}
-                </p>
-            </div>
+            <x-empty-state
+                :title="($search !== '' || $type !== '') ? 'No movements match your filters' : 'No stock movements yet'"
+                :description="($search !== '' || $type !== '') ? 'Try a different search or clear the type filter.' : 'Use Adjust Stock on the Products page to record inventory changes.'"
+            />
         @else
-            <div class="overflow-x-auto">
-                <table class="min-w-full divide-y divide-slate-200 text-left text-sm">
-                    <thead class="bg-slate-50 text-xs uppercase tracking-wide text-slate-500">
-                        <tr>
-                            <th class="px-4 py-3 font-medium">Date</th>
-                            <th class="px-4 py-3 font-medium">Product</th>
-                            <th class="px-4 py-3 font-medium">Type</th>
-                            <th class="px-4 py-3 font-medium">Change</th>
-                            <th class="px-4 py-3 font-medium">Before</th>
-                            <th class="px-4 py-3 font-medium">After</th>
-                            <th class="px-4 py-3 font-medium">Reason</th>
-                            <th class="px-4 py-3 font-medium">User</th>
-                        </tr>
-                    </thead>
-                    <tbody class="divide-y divide-slate-100">
-                        @foreach ($movements as $movement)
-                            <tr wire:key="movement-{{ $movement->id }}" class="hover:bg-slate-50/80">
-                                <td class="whitespace-nowrap px-4 py-3 text-slate-600">
-                                    {{ $display->dateTime($movement->created_at) }}
-                                </td>
-                                <td class="px-4 py-3">
-                                    <div class="flex items-center gap-3">
-                                        <x-product-image :product="$movement->product" size="xs" :alt="$movement->product?->name ?? 'Product'" />
-                                        <div>
-                                            <div class="font-medium text-slate-900">{{ $movement->product?->name ?? 'Deleted product' }}</div>
-                                            <div class="font-mono text-xs text-slate-500">{{ $movement->product?->sku ?? '-' }}</div>
-                                        </div>
+            <x-table caption="Stock movement history">
+                <x-table.header>
+                    <tr>
+                        <th scope="col" class="px-4 py-3">Date</th>
+                        <th scope="col" class="px-4 py-3">Product</th>
+                        <th scope="col" class="px-4 py-3">Type</th>
+                        <th scope="col" class="px-4 py-3 text-right">Change</th>
+                        <th scope="col" class="hidden px-4 py-3 text-right md:table-cell">Before</th>
+                        <th scope="col" class="hidden px-4 py-3 text-right md:table-cell">After</th>
+                        <th scope="col" class="hidden px-4 py-3 lg:table-cell">Reason</th>
+                        <th scope="col" class="hidden px-4 py-3 sm:table-cell">User</th>
+                    </tr>
+                </x-table.header>
+                <x-table.body>
+                    @foreach ($movements as $movement)
+                        <tr wire:key="movement-{{ $movement->id }}" class="hover:bg-slate-50/80">
+                            <td class="whitespace-nowrap px-4 py-3 text-slate-600">
+                                {{ $display->dateTime($movement->created_at) }}
+                            </td>
+                            <td class="px-4 py-3">
+                                <div class="flex items-center gap-3">
+                                    <x-product-image :product="$movement->product" size="xs" :alt="$movement->product?->name ?? 'Product'" />
+                                    <div>
+                                        <div class="font-medium text-slate-900">{{ $movement->product?->name ?? 'Deleted product' }}</div>
+                                        <div class="font-mono text-xs text-slate-500">{{ $movement->product?->sku ?? '-' }}</div>
                                     </div>
-                                </td>
-                                <td class="px-4 py-3">
-                                    <span class="inline-flex rounded-md bg-slate-100 px-2 py-1 text-[11px] font-medium text-slate-700">
-                                        {{ $movement->type->label() }}
-                                    </span>
-                                </td>
-                                <td @class([
-                                    'px-4 py-3 font-medium',
-                                    'text-brand-700' => $movement->quantity_change > 0,
-                                    'text-red-600' => $movement->quantity_change < 0,
-                                ])>
-                                    {{ $movement->quantity_change > 0 ? '+'.$movement->quantity_change : $movement->quantity_change }}
-                                </td>
-                                <td class="px-4 py-3 text-slate-700">{{ $movement->quantity_before }}</td>
-                                <td class="px-4 py-3 text-slate-700">{{ $movement->quantity_after }}</td>
-                                <td class="max-w-xs px-4 py-3 text-slate-600">
-                                    {{ $movement->reason ?: '-' }}
-                                </td>
-                                <td class="px-4 py-3 text-slate-600">
-                                    {{ $movement->user?->name ?? 'System' }}
-                                </td>
-                            </tr>
-                        @endforeach
-                    </tbody>
-                </table>
-            </div>
+                                </div>
+                            </td>
+                            <td class="px-4 py-3">
+                                <x-badge :variant="$movement->type->badgeVariant()">{{ $movement->type->label() }}</x-badge>
+                            </td>
+                            <td @class([
+                                'px-4 py-3 text-right font-medium tabular-nums',
+                                'text-brand-700' => $movement->quantity_change > 0,
+                                'text-red-600' => $movement->quantity_change < 0,
+                            ])>
+                                {{ $display->quantityChange((int) $movement->quantity_change) }}
+                            </td>
+                            <td class="hidden px-4 py-3 text-right tabular-nums text-slate-700 md:table-cell">{{ $display->quantity($movement->quantity_before) }}</td>
+                            <td class="hidden px-4 py-3 text-right tabular-nums text-slate-700 md:table-cell">{{ $display->quantity($movement->quantity_after) }}</td>
+                            <td class="hidden max-w-xs px-4 py-3 text-slate-600 lg:table-cell">
+                                {{ $movement->reason ?: '-' }}
+                            </td>
+                            <td class="hidden px-4 py-3 text-slate-600 sm:table-cell">
+                                {{ $movement->user?->name ?? 'System' }}
+                            </td>
+                        </tr>
+                    @endforeach
+                </x-table.body>
+            </x-table>
 
             @if ($movements->hasPages())
                 <div class="border-t border-slate-200 px-4 py-3">

@@ -18,6 +18,7 @@ class Index extends Component
 
         return view('livewire.reports.index', [
             'metrics' => $metrics,
+            'display' => $display,
             'inventoryValueDisplay' => $display->money($metrics['inventory_value_at_cost']),
             'sections' => [
                 [

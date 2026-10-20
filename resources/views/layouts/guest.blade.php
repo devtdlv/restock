@@ -22,6 +22,13 @@
         @vite(['resources/css/app.css', 'resources/js/app.js'])
     </head>
     <body class="min-h-screen bg-slate-100 font-sans text-slate-900 antialiased">
+        <a
+            href="#guest-content"
+            class="sr-only focus:not-sr-only focus:absolute focus:left-4 focus:top-4 focus:z-50 focus:rounded-lg focus:bg-white focus:px-4 focus:py-2 focus:text-sm focus:font-semibold focus:text-slate-900 focus:shadow-lg"
+        >
+            Skip to main content
+        </a>
+
         <div class="relative flex min-h-screen flex-col justify-center px-4 py-12 sm:px-6 lg:px-8">
             <div class="pointer-events-none absolute inset-0 overflow-hidden" aria-hidden="true">
                 <div class="absolute -left-24 top-0 h-72 w-72 rounded-full bg-brand-200/40 blur-3xl"></div>
@@ -42,7 +49,7 @@
                     <p class="mt-3 text-sm text-slate-500">Local inventory management for your warehouse</p>
                 </div>
 
-                <div class="rounded-2xl border border-slate-200/80 bg-white p-8 shadow-sm">
+                <div id="guest-content" class="rounded-2xl border border-slate-200/80 bg-white p-6 shadow-sm sm:p-8">
                     {{ $slot }}
                 </div>
             </div>

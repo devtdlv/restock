@@ -1,53 +1,54 @@
 <div class="space-y-6">
-    <div>
-        <h1 class="text-2xl font-bold tracking-tight text-slate-900">Reports &amp; Analytics</h1>
-        <p class="mt-1 text-sm text-slate-500">
-            Read-only insights from current inventory, stock history, and purchase orders. Reports never change stock or purchasing data.
-        </p>
-    </div>
+    <x-page-header
+        title="Reports & Analytics"
+        subtitle="Read-only insights from current inventory, stock history, and purchase orders. Reports never change stock or purchasing data."
+    />
 
-    <div class="rounded-xl border border-slate-200 bg-white p-5 shadow-sm sm:p-6">
+    <x-panel class="sm:p-6">
         <h2 class="text-lg font-semibold text-slate-900">Inventory overview</h2>
         <p class="mt-1 text-sm text-slate-500">
             Units on hand, inventory value, and stock alerts use <span class="font-medium text-slate-700">active products only</span>.
             Inventory value = quantity on hand × stored cost price (decimal-safe).
         </p>
 
-        <dl class="mt-6 grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
-            <div class="rounded-lg border border-slate-200 bg-slate-50 p-4">
-                <dt class="text-xs font-medium uppercase tracking-wide text-slate-500">Active products</dt>
-                <dd class="mt-2 text-2xl font-semibold text-slate-900">{{ $metrics['active_products'] }}</dd>
-            </div>
-            <div class="rounded-lg border border-slate-200 bg-slate-50 p-4">
-                <dt class="text-xs font-medium uppercase tracking-wide text-slate-500">Inactive products</dt>
-                <dd class="mt-2 text-2xl font-semibold text-slate-900">{{ $metrics['inactive_products'] }}</dd>
-            </div>
-            <div class="rounded-lg border border-slate-200 bg-slate-50 p-4">
-                <dt class="text-xs font-medium uppercase tracking-wide text-slate-500">Units on hand (active)</dt>
-                <dd class="mt-2 text-2xl font-semibold text-slate-900">{{ $metrics['total_units_on_hand'] }}</dd>
-            </div>
-            <div class="rounded-lg border border-slate-200 bg-slate-50 p-4">
-                <dt class="text-xs font-medium uppercase tracking-wide text-slate-500">Inventory value at cost (active)</dt>
-                <dd class="mt-2 text-2xl font-semibold text-slate-900">{{ $inventoryValueDisplay }}</dd>
-            </div>
-            <div class="rounded-lg border border-slate-200 bg-slate-50 p-4">
-                <dt class="text-xs font-medium uppercase tracking-wide text-slate-500">Low-stock products (active)</dt>
-                <dd class="mt-2 text-2xl font-semibold text-slate-900">{{ $metrics['low_stock_products'] }}</dd>
-                <p class="mt-1 text-xs text-slate-500">Quantity on hand ≤ reorder level</p>
-            </div>
-            <div class="rounded-lg border border-slate-200 bg-slate-50 p-4">
-                <dt class="text-xs font-medium uppercase tracking-wide text-slate-500">Out-of-stock products (active)</dt>
-                <dd class="mt-2 text-2xl font-semibold text-slate-900">{{ $metrics['out_of_stock_products'] }}</dd>
-            </div>
-        </dl>
-    </div>
+        <div class="mt-6 grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+            <x-metric-card
+                label="Active products"
+                :value="$display->quantity($metrics['active_products'])"
+                :hint="'Inactive products: '.$display->quantity($metrics['inactive_products'])"
+            />
+            <x-metric-card
+                label="Units on hand (active)"
+                :value="$display->quantity($metrics['total_units_on_hand'])"
+            />
+            <x-metric-card
+                label="Inventory value at cost"
+                :value="$inventoryValueDisplay"
+                hint="Active products only"
+            />
+            <x-metric-card
+                label="Low-stock products"
+                :value="$display->quantity($metrics['low_stock_products'])"
+                hint="Quantity on hand ≤ reorder level"
+                :tone="$metrics['low_stock_products'] > 0 ? 'warning' : 'default'"
+                :href="$metrics['low_stock_products'] > 0 ? route('reports.low-stock') : null"
+            />
+            <x-metric-card
+                label="Out-of-stock products"
+                :value="$display->quantity($metrics['out_of_stock_products'])"
+                :tone="$metrics['out_of_stock_products'] > 0 ? 'danger' : 'default'"
+                :href="$metrics['out_of_stock_products'] > 0 ? route('reports.low-stock') : null"
+                class="sm:col-span-2 xl:col-span-1"
+            />
+        </div>
+    </x-panel>
 
     <div class="grid gap-4 md:grid-cols-3">
         @foreach ($sections as $section)
             <a
                 href="{{ route($section['route']) }}"
                 wire:navigate
-                class="rounded-xl border border-slate-200 bg-white p-5 shadow-sm transition hover:border-brand-300 hover:shadow"
+                class="rounded-xl border border-slate-200 bg-white p-5 shadow-sm transition hover:border-brand-300 hover:shadow focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-500"
             >
                 <h2 class="text-base font-semibold text-slate-900">{{ $section['title'] }}</h2>
                 <p class="mt-2 text-sm text-slate-500">{{ $section['description'] }}</p>

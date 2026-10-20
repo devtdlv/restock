@@ -28,4 +28,14 @@
         outline: 2px solid var(--color-brand-500);
         outline-offset: 2px;
     }
+
+    [x-cloak] {
+        display: none !important;
+    }
+
+    /* Prefer visible table scroll affordance without page-level overflow. */
+    .app-table-scroll {
+        -webkit-overflow-scrolling: touch;
+        scrollbar-gutter: stable;
+    }
 }

@@ -10,15 +10,16 @@
         </div>
     @endif
 
-    <form wire:submit="sendResetLink" class="space-y-4">
+    <form wire:submit="sendResetLink" class="space-y-5">
         <div>
-            <x-input-label for="email" value="Email address" />
+            <x-input-label for="email" value="Email address" :required="true" />
             <x-text-input
                 wire:model="email"
                 id="email"
                 type="email"
                 name="email"
                 required
+                aria-required="true"
                 autofocus
                 autocomplete="username"
                 placeholder="you@company.com"
@@ -26,7 +27,7 @@
             <x-input-error :messages="$errors->get('email')" />
         </div>
 
-        <x-primary-button wire:loading.attr="disabled">
+        <x-primary-button wire:loading.attr="disabled" wire:target="sendResetLink">
             <span wire:loading.remove wire:target="sendResetLink">Email reset link</span>
             <span wire:loading wire:target="sendResetLink">Sending…</span>
         </x-primary-button>

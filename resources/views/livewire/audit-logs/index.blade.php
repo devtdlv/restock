@@ -1,18 +1,15 @@
 <div class="space-y-6">
-    <div class="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
-        <div>
-            <h1 class="text-2xl font-bold tracking-tight text-slate-900">Audit Logs</h1>
-            <p class="mt-1 text-sm text-slate-500">
-                Read-only history of catalog create, update, and delete events. Inventory quantity changes are recorded under
-                <a href="{{ route('stock-movements.index') }}" class="font-medium text-brand-700 hover:text-brand-800" wire:navigate>Stock Movements</a>.
-            </p>
-        </div>
-    </div>
+    <x-page-header title="Audit Logs">
+        <x-slot:description>
+            Read-only history of catalog create, update, and delete events. Inventory quantity changes are recorded under
+            <a href="{{ route('stock-movements.index') }}" class="font-medium text-brand-700 hover:text-brand-800" wire:navigate>Stock Movements</a>.
+        </x-slot:description>
+    </x-page-header>
 
-    <div class="rounded-xl border border-slate-200 bg-white p-4 shadow-sm sm:p-5">
-        <div class="grid gap-4 lg:grid-cols-4">
-            <div class="lg:col-span-1">
-                <label for="audit-search" class="sr-only">Search audit logs</label>
+    <x-panel>
+        <div class="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+            <div>
+                <x-input-label for="audit-search" value="Search" />
                 <x-text-input
                     wire:model.live.debounce.300ms="search"
                     id="audit-search"
@@ -22,63 +19,54 @@
             </div>
 
             <div>
-                <label for="audit-action" class="sr-only">Filter by action</label>
-                <select
-                    wire:model.live="action"
-                    id="audit-action"
-                    class="block w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm text-slate-900 shadow-sm focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-500/20"
-                >
+                <x-input-label for="audit-action" value="Action" />
+                <x-select-input wire:model.live="action" id="audit-action">
                     <option value="">All actions</option>
                     @foreach ($actions as $auditAction)
                         <option value="{{ $auditAction->value }}">{{ $auditAction->label() }}</option>
                     @endforeach
-                </select>
+                </x-select-input>
             </div>
 
             <div>
-                <label for="audit-entity-type" class="sr-only">Filter by entity type</label>
-                <select
-                    wire:model.live="entityType"
-                    id="audit-entity-type"
-                    class="block w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm text-slate-900 shadow-sm focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-500/20"
-                >
+                <x-input-label for="audit-entity-type" value="Entity type" />
+                <x-select-input wire:model.live="entityType" id="audit-entity-type">
                     <option value="">All entity types</option>
                     @foreach ($entityTypes as $type => $label)
                         <option value="{{ $type }}">{{ $label }}</option>
                     @endforeach
-                </select>
+                </x-select-input>
             </div>
 
             <div>
-                <label for="audit-user" class="sr-only">Filter by user</label>
-                <select
-                    wire:model.live="userId"
-                    id="audit-user"
-                    class="block w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm text-slate-900 shadow-sm focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-500/20"
-                >
+                <x-input-label for="audit-user" value="User" />
+                <x-select-input wire:model.live="userId" id="audit-user">
                     <option value="">All users</option>
                     @foreach ($filterUsers as $user)
                         <option value="{{ $user->id }}">{{ $user->name }} ({{ $user->email }})</option>
                     @endforeach
-                </select>
+                </x-select-input>
             </div>
         </div>
-    </div>
+    </x-panel>
 
     @if ($selectedAudit)
-        <div class="rounded-xl border border-slate-200 bg-white p-5 shadow-sm sm:p-6" wire:key="audit-details-{{ $selectedAudit->id }}">
-            <div class="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
-                <div>
-                    <h2 class="text-lg font-semibold text-slate-900">Audit details</h2>
-                    <p class="mt-1 text-sm text-slate-500">Read-only snapshot. Audit records cannot be edited or deleted.</p>
-                </div>
-                <x-secondary-button wire:click="closeDetails">Close</x-secondary-button>
+        <x-form-panel
+            title="Audit details"
+            subtitle="Read-only snapshot. Audit records cannot be edited or deleted."
+            title-id="audit-details-title"
+            wire:key="audit-details-{{ $selectedAudit->id }}"
+        >
+            <div class="mb-5 flex justify-end">
+                <x-secondary-button type="button" class="w-full sm:w-auto" wire:click="closeDetails">Close</x-secondary-button>
             </div>
 
-            <dl class="mt-6 grid gap-4 sm:grid-cols-2">
+            <dl class="grid gap-4 sm:grid-cols-2">
                 <div>
                     <dt class="text-xs font-medium uppercase tracking-wide text-slate-500">Action</dt>
-                    <dd class="mt-1 text-sm text-slate-900">{{ $selectedAudit->action->label() }}</dd>
+                    <dd class="mt-1">
+                        <x-badge :variant="$selectedAudit->action->badgeVariant()">{{ $selectedAudit->action->label() }}</x-badge>
+                    </dd>
                 </div>
                 <div>
                     <dt class="text-xs font-medium uppercase tracking-wide text-slate-500">Entity</dt>
@@ -90,7 +78,7 @@
                 </div>
                 <div>
                     <dt class="text-xs font-medium uppercase tracking-wide text-slate-500">Entity ID</dt>
-                    <dd class="mt-1 text-sm text-slate-900">{{ $selectedAudit->entity_id }}</dd>
+                    <dd class="mt-1 text-sm tabular-nums text-slate-900">{{ $selectedAudit->entity_id }}</dd>
                 </div>
                 <div>
                     <dt class="text-xs font-medium uppercase tracking-wide text-slate-500">Responsible user</dt>
@@ -103,8 +91,8 @@
                 </div>
                 <div>
                     <dt class="text-xs font-medium uppercase tracking-wide text-slate-500">Timestamp</dt>
-                    <dd class="mt-1 text-sm text-slate-900">
-                        {{ $selectedAudit->created_at?->timezone(config('app.timezone'))->format('Y-m-d H:i:s') }}
+                    <dd class="mt-1 text-sm tabular-nums text-slate-900">
+                        {{ $display->dateTime($selectedAudit->created_at) }}
                     </dd>
                 </div>
             </dl>
@@ -115,25 +103,25 @@
                     @if (count($selectedChanges) === 0)
                         <p class="mt-2 text-sm text-slate-500">No field differences were recorded for this update.</p>
                     @else
-                        <div class="mt-3 overflow-x-auto rounded-lg border border-slate-200">
-                            <table class="min-w-full divide-y divide-slate-200 text-left text-sm">
-                                <thead class="bg-slate-50 text-xs uppercase tracking-wide text-slate-500">
+                        <div class="mt-3 overflow-hidden rounded-lg border border-slate-200">
+                            <x-table caption="Changed audit fields">
+                                <x-table.header>
                                     <tr>
-                                        <th class="px-4 py-3 font-medium">Field</th>
-                                        <th class="px-4 py-3 font-medium">Previous</th>
-                                        <th class="px-4 py-3 font-medium">New</th>
+                                        <th scope="col" class="px-4 py-3">Field</th>
+                                        <th scope="col" class="px-4 py-3">Previous</th>
+                                        <th scope="col" class="px-4 py-3">New</th>
                                     </tr>
-                                </thead>
-                                <tbody class="divide-y divide-slate-100">
+                                </x-table.header>
+                                <x-table.body>
                                     @foreach ($selectedChanges as $change)
                                         <tr>
                                             <td class="px-4 py-3 font-medium text-slate-900">{{ $change['label'] }}</td>
-                                            <td class="px-4 py-3 text-slate-600">{{ $presenter->formatValue($change['before']) }}</td>
-                                            <td class="px-4 py-3 text-slate-900">{{ $presenter->formatValue($change['after']) }}</td>
+                                            <td class="break-words px-4 py-3 text-slate-600">{{ $presenter->formatValue($change['before']) }}</td>
+                                            <td class="break-words px-4 py-3 text-slate-900">{{ $presenter->formatValue($change['after']) }}</td>
                                         </tr>
                                     @endforeach
-                                </tbody>
-                            </table>
+                                </x-table.body>
+                            </x-table>
                         </div>
                     @endif
                 </div>
@@ -173,70 +161,70 @@
                     @endif
                 </div>
             </div>
-        </div>
+        </x-form-panel>
     @endif
 
     <div class="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
         @if ($audits->isEmpty())
-            <div class="px-6 py-16 text-center">
-                <p class="text-base font-semibold text-slate-900">
-                    {{ ($search !== '' || $action !== '' || $entityType !== '' || $userId !== '') ? 'No audit logs match your filters' : 'No audit logs yet' }}
-                </p>
-                <p class="mt-2 text-sm text-slate-500">
-                    Catalog changes made through Products and Categories appear here. Stock quantity changes stay in Stock Movements.
-                </p>
-            </div>
+            <x-empty-state
+                :title="($search !== '' || $action !== '' || $entityType !== '' || $userId !== '') ? 'No audit logs match your filters' : 'No audit logs yet'"
+                :description="($search !== '' || $action !== '' || $entityType !== '' || $userId !== '')
+                    ? 'Try a different search or clear one of the filters.'
+                    : 'Catalog changes made through Products and Categories appear here. Stock quantity changes stay in Stock Movements.'"
+            />
         @else
-            <div class="overflow-x-auto">
-                <table class="min-w-full divide-y divide-slate-200 text-left text-sm">
-                    <thead class="bg-slate-50 text-xs uppercase tracking-wide text-slate-500">
-                        <tr>
-                            <th class="px-4 py-3 font-medium">Date</th>
-                            <th class="px-4 py-3 font-medium">User</th>
-                            <th class="px-4 py-3 font-medium">Action</th>
-                            <th class="px-4 py-3 font-medium">Entity</th>
-                            <th class="px-4 py-3 font-medium">Summary</th>
-                            <th class="px-4 py-3 font-medium text-right">Details</th>
-                        </tr>
-                    </thead>
-                    <tbody class="divide-y divide-slate-100">
-                        @foreach ($audits as $audit)
-                            <tr wire:key="audit-{{ $audit->id }}" class="hover:bg-slate-50/80">
-                                <td class="whitespace-nowrap px-4 py-3 text-slate-600">
-                                    {{ $audit->created_at?->timezone(config('app.timezone'))->format('Y-m-d H:i') }}
-                                </td>
-                                <td class="px-4 py-3 text-slate-700">
+            <x-table caption="Audit log history">
+                <x-table.header>
+                    <tr>
+                        <th scope="col" class="px-4 py-3">Date</th>
+                        <th scope="col" class="hidden px-4 py-3 sm:table-cell">User</th>
+                        <th scope="col" class="px-4 py-3">Action</th>
+                        <th scope="col" class="px-4 py-3">Entity</th>
+                        <th scope="col" class="hidden px-4 py-3 lg:table-cell">Summary</th>
+                        <th scope="col" class="px-4 py-3 text-right">Details</th>
+                    </tr>
+                </x-table.header>
+                <x-table.body>
+                    @foreach ($audits as $audit)
+                        <tr wire:key="audit-{{ $audit->id }}" class="hover:bg-slate-50/80">
+                            <td class="whitespace-nowrap px-4 py-3 tabular-nums text-slate-600">
+                                {{ $display->dateTime($audit->created_at) }}
+                                <div class="mt-0.5 text-xs text-slate-500 sm:hidden">
                                     {{ $audit->user?->name ?? 'System / unavailable' }}
-                                </td>
-                                <td class="px-4 py-3">
-                                    <span class="inline-flex rounded-md bg-slate-100 px-2 py-1 text-[11px] font-medium text-slate-700">
-                                        {{ $audit->action->label() }}
-                                    </span>
-                                </td>
-                                <td class="px-4 py-3">
-                                    <div class="font-medium text-slate-900">{{ \App\Support\AuditPresenter::entityTypeLabel($audit->entity_type) }}</div>
-                                    @if ($presenter->entityName($audit))
-                                        <div class="text-sm text-slate-700">{{ $presenter->entityName($audit) }}</div>
-                                    @endif
-                                    <div class="text-xs text-slate-500">ID {{ $audit->entity_id }}</div>
-                                </td>
-                                <td class="max-w-md px-4 py-3 text-slate-600">
+                                </div>
+                            </td>
+                            <td class="hidden px-4 py-3 text-slate-700 sm:table-cell">
+                                {{ $audit->user?->name ?? 'System / unavailable' }}
+                            </td>
+                            <td class="px-4 py-3">
+                                <x-badge :variant="$audit->action->badgeVariant()">{{ $audit->action->label() }}</x-badge>
+                            </td>
+                            <td class="px-4 py-3">
+                                <div class="font-medium text-slate-900">{{ \App\Support\AuditPresenter::entityTypeLabel($audit->entity_type) }}</div>
+                                @if ($presenter->entityName($audit))
+                                    <div class="truncate text-sm text-slate-700">{{ $presenter->entityName($audit) }}</div>
+                                @endif
+                                <div class="text-xs tabular-nums text-slate-500">ID {{ $audit->entity_id }}</div>
+                                <div class="mt-1 max-w-xs truncate text-xs text-slate-500 lg:hidden">
                                     {{ $presenter->changeSummary($audit) }}
-                                </td>
-                                <td class="px-4 py-3 text-right">
-                                    <button
-                                        type="button"
-                                        wire:click="viewDetails({{ $audit->id }})"
-                                        class="rounded-lg px-2.5 py-1.5 text-sm font-medium text-brand-700 hover:bg-brand-50"
-                                    >
-                                        View Details
-                                    </button>
-                                </td>
-                            </tr>
-                        @endforeach
-                    </tbody>
-                </table>
-            </div>
+                                </div>
+                            </td>
+                            <td class="hidden max-w-md px-4 py-3 text-slate-600 lg:table-cell">
+                                {{ $presenter->changeSummary($audit) }}
+                            </td>
+                            <td class="px-4 py-3 text-right">
+                                <button
+                                    type="button"
+                                    wire:click="viewDetails({{ $audit->id }})"
+                                    class="min-h-11 rounded-lg px-2.5 py-1.5 text-sm font-medium text-brand-700 hover:bg-brand-50"
+                                >
+                                    View Details
+                                </button>
+                            </td>
+                        </tr>
+                    @endforeach
+                </x-table.body>
+            </x-table>
 
             @if ($audits->hasPages())
                 <div class="border-t border-slate-200 px-4 py-3">

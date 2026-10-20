@@ -22,6 +22,20 @@ enum PurchaseOrderStatus: string
     }
 
     /**
+     * Badge variant for presentation components.
+     */
+    public function badgeVariant(): string
+    {
+        return match ($this) {
+            self::Draft => 'neutral',
+            self::Ordered => 'info',
+            self::PartiallyReceived => 'warning',
+            self::Received => 'success',
+            self::Cancelled => 'danger',
+        };
+    }
+
+    /**
      * @return list<string>
      */
     public static function values(): array

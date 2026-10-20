@@ -40,4 +40,17 @@ enum StockMovementType: string
             self::LegacyOpening => 'Legacy Opening Balance',
         };
     }
+
+    /**
+     * Badge variant for presentation components.
+     */
+    public function badgeVariant(): string
+    {
+        return match ($this) {
+            self::StockIn => 'success',
+            self::StockOut => 'danger',
+            self::Adjustment => 'warning',
+            self::LegacyOpening => 'neutral',
+        };
+    }
 }

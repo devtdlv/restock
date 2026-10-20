@@ -1,20 +1,19 @@
 <div class="space-y-6">
-    <div class="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
-        <div>
-            <a href="{{ route('reports.index') }}" class="text-sm font-medium text-brand-700 hover:text-brand-800" wire:navigate>
-                ← Back to reports
-            </a>
-            <h1 class="mt-2 text-2xl font-bold tracking-tight text-slate-900">Stock Movement Report</h1>
-            <p class="mt-1 text-sm text-slate-500">
-                Exact recorded movement history. Includes stock in, stock out, adjustments, and legacy opening balances.
-            </p>
-        </div>
-        <x-secondary-button type="button" class="w-auto" wire:click="export" wire:loading.attr="disabled">
-            Export CSV
-        </x-secondary-button>
-    </div>
+    <x-page-header
+        title="Stock Movement Report"
+        subtitle="Exact recorded movement history. Includes stock in, stock out, adjustments, and legacy opening balances."
+        :back-href="route('reports.index')"
+        back-label="Back to reports"
+    >
+        <x-slot:actions>
+            <x-secondary-button type="button" class="w-full sm:w-auto" wire:click="export" wire:loading.attr="disabled" wire:target="export">
+                <span wire:loading.remove wire:target="export">Export CSV</span>
+                <span wire:loading wire:target="export">Exporting…</span>
+            </x-secondary-button>
+        </x-slot:actions>
+    </x-page-header>
 
-    <div class="rounded-xl border border-slate-200 bg-white p-4 shadow-sm sm:p-5">
+    <x-panel>
         <div class="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
             <div>
                 <x-input-label for="movement-date-from" value="From date" />
@@ -26,77 +25,73 @@
             </div>
             <div>
                 <x-input-label for="movement-product" value="Product" />
-                <select
-                    wire:model.live="productId"
-                    id="movement-product"
-                    class="mt-1 block w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm text-slate-900 shadow-sm focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-500/20"
-                >
+                <x-select-input wire:model.live="productId" id="movement-product">
                     <option value="">All products</option>
                     @foreach ($products as $product)
                         <option value="{{ $product->id }}">{{ $product->name }} ({{ $product->sku }})</option>
                     @endforeach
-                </select>
+                </x-select-input>
             </div>
             <div>
                 <x-input-label for="movement-type" value="Movement type" />
-                <select
-                    wire:model.live="type"
-                    id="movement-type"
-                    class="mt-1 block w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm text-slate-900 shadow-sm focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-500/20"
-                >
+                <x-select-input wire:model.live="type" id="movement-type">
                     <option value="">All types</option>
                     @foreach ($movementTypes as $movementType)
                         <option value="{{ $movementType->value }}">{{ $movementType->label() }}</option>
                     @endforeach
-                </select>
+                </x-select-input>
             </div>
         </div>
-    </div>
+    </x-panel>
 
     <div class="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
         @if ($movements->isEmpty())
-            <div class="px-6 py-16 text-center">
-                <p class="text-base font-semibold text-slate-900">No stock movements match</p>
-                <p class="mt-2 text-sm text-slate-500">Adjust the date range, product, or type filters.</p>
-            </div>
+            <x-empty-state
+                title="No stock movements match"
+                description="Adjust the date range, product, or type filters."
+            />
         @else
-            <div class="overflow-x-auto">
-                <table class="min-w-full divide-y divide-slate-200 text-left text-sm">
-                    <thead class="bg-slate-50 text-xs uppercase tracking-wide text-slate-500">
-                        <tr>
-                            <th class="px-4 py-3 font-medium">Timestamp</th>
-                            <th class="px-4 py-3 font-medium">Product</th>
-                            <th class="px-4 py-3 font-medium">Type</th>
-                            <th class="px-4 py-3 font-medium">Qty</th>
-                            <th class="px-4 py-3 font-medium">Before</th>
-                            <th class="px-4 py-3 font-medium">After</th>
-                            <th class="px-4 py-3 font-medium">Reason</th>
-                            <th class="px-4 py-3 font-medium">User</th>
+            <x-table caption="Stock movement report">
+                <x-table.header>
+                    <tr>
+                        <th scope="col" class="px-4 py-3">Timestamp</th>
+                        <th scope="col" class="px-4 py-3">Product</th>
+                        <th scope="col" class="px-4 py-3">Type</th>
+                        <th scope="col" class="px-4 py-3 text-right">Qty</th>
+                        <th scope="col" class="hidden px-4 py-3 text-right md:table-cell">Before</th>
+                        <th scope="col" class="hidden px-4 py-3 text-right md:table-cell">After</th>
+                        <th scope="col" class="hidden px-4 py-3 lg:table-cell">Reason</th>
+                        <th scope="col" class="hidden px-4 py-3 sm:table-cell">User</th>
+                    </tr>
+                </x-table.header>
+                <x-table.body>
+                    @foreach ($movements as $movement)
+                        <tr wire:key="report-movement-{{ $movement->id }}" class="hover:bg-slate-50/80">
+                            <td class="whitespace-nowrap px-4 py-3 tabular-nums text-slate-600">
+                                {{ $display->dateTime($movement->created_at) }}
+                            </td>
+                            <td class="px-4 py-3">
+                                <div class="font-medium text-slate-900">{{ $movement->product?->name ?? 'Unavailable' }}</div>
+                                <div class="font-mono text-xs text-slate-500">{{ $movement->product?->sku }}</div>
+                            </td>
+                            <td class="px-4 py-3">
+                                <x-badge :variant="$movement->type?->badgeVariant() ?? 'neutral'">{{ $movement->type?->label() }}</x-badge>
+                            </td>
+                            <td @class([
+                                'px-4 py-3 text-right font-medium tabular-nums',
+                                'text-brand-700' => $movement->quantity_change > 0,
+                                'text-red-600' => $movement->quantity_change < 0,
+                            ])>
+                                {{ $display->quantityChange((int) $movement->quantity_change) }}
+                            </td>
+                            <td class="hidden px-4 py-3 text-right tabular-nums text-slate-600 md:table-cell">{{ $display->quantity($movement->quantity_before) }}</td>
+                            <td class="hidden px-4 py-3 text-right tabular-nums text-slate-600 md:table-cell">{{ $display->quantity($movement->quantity_after) }}</td>
+                            <td class="hidden max-w-xs px-4 py-3 text-slate-600 lg:table-cell">{{ $movement->reason ?: '-' }}</td>
+                            <td class="hidden px-4 py-3 text-slate-600 sm:table-cell">{{ $movement->user?->name ?? 'System / unavailable' }}</td>
                         </tr>
-                    </thead>
-                    <tbody class="divide-y divide-slate-100">
-                        @foreach ($movements as $movement)
-                            <tr wire:key="report-movement-{{ $movement->id }}" class="hover:bg-slate-50/80">
-                                <td class="whitespace-nowrap px-4 py-3 text-slate-600">
-                                    {{ $display->dateTime($movement->created_at) }}
-                                </td>
-                                <td class="px-4 py-3">
-                                    <div class="font-medium text-slate-900">{{ $movement->product?->name ?? 'Unavailable' }}</div>
-                                    <div class="font-mono text-xs text-slate-500">{{ $movement->product?->sku }}</div>
-                                </td>
-                                <td class="px-4 py-3 text-slate-700">{{ $movement->type?->label() }}</td>
-                                <td class="px-4 py-3 font-medium text-slate-900">
-                                    {{ $movement->quantity_change > 0 ? '+'.$movement->quantity_change : $movement->quantity_change }}
-                                </td>
-                                <td class="px-4 py-3 text-slate-600">{{ $movement->quantity_before }}</td>
-                                <td class="px-4 py-3 text-slate-600">{{ $movement->quantity_after }}</td>
-                                <td class="max-w-xs px-4 py-3 text-slate-600">{{ $movement->reason ?: '—' }}</td>
-                                <td class="px-4 py-3 text-slate-600">{{ $movement->user?->name ?? 'System / unavailable' }}</td>
-                            </tr>
-                        @endforeach
-                    </tbody>
-                </table>
-            </div>
+                    @endforeach
+                </x-table.body>
+            </x-table>
             @if ($movements->hasPages())
                 <div class="border-t border-slate-200 px-4 py-3">
                     {{ $movements->links() }}

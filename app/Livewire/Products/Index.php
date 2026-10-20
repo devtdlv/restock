@@ -11,6 +11,7 @@ use App\Models\Product;
 use App\Services\Catalog\ProductCatalogService;
 use App\Services\Settings\SettingsService;
 use App\Services\Stock\StockMovementService;
+use App\Support\AppDisplay;
 use Brick\Math\BigDecimal;
 use Brick\Math\RoundingMode;
 use Illuminate\Database\QueryException;
@@ -357,7 +358,7 @@ class Index extends Component
         $this->resetPage();
     }
 
-    public function render(SettingsService $settings)
+    public function render(SettingsService $settings, AppDisplay $display)
     {
         $products = Product::query()
             ->with('categories')
@@ -375,6 +376,7 @@ class Index extends Component
             'products' => $products,
             'availableCategories' => Category::query()->orderBy('name')->get(['id', 'name', 'is_active']),
             'adjustmentTypes' => StockMovementType::adjustableCases(),
+            'display' => $display,
         ])->layoutData(['header' => 'Products']);
     }
 

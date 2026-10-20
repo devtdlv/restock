@@ -72,6 +72,10 @@ class DashboardMetricsTest extends TestCase
             ->assertSee('Inventory value at cost', false)
             ->assertSee('Outstanding purchase orders', false)
             ->assertSee('$60.00', false)
+            ->assertSee('Needs attention', false)
+            ->assertSee('Recent stock movements', false)
+            ->assertSee('Shelf Widget', false)
+            ->assertSee('Low stock', false)
             ->assertSee(route('reports.low-stock'), false)
             ->assertSee(route('settings.index'), false);
 

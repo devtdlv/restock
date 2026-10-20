@@ -16,4 +16,16 @@ enum AuditAction: string
             self::Deleted => 'Deleted',
         };
     }
+
+    /**
+     * Badge variant for presentation components.
+     */
+    public function badgeVariant(): string
+    {
+        return match ($this) {
+            self::Created => 'success',
+            self::Updated => 'info',
+            self::Deleted => 'danger',
+        };
+    }
 }

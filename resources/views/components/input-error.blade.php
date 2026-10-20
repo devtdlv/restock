@@ -9,7 +9,7 @@
 @endphp
 
 @if ($resolvedMessages)
-    <ul {{ $attributes->merge(['class' => 'mt-1.5 space-y-1 text-sm text-red-600']) }}>
+    <ul {{ $attributes->merge(['class' => 'mt-1.5 space-y-1 text-sm text-red-600', 'role' => 'alert']) }}>
         @foreach ($resolvedMessages as $message)
             <li>{{ $message }}</li>
         @endforeach
