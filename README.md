@@ -212,8 +212,10 @@ php artisan migrate
 | Migrations | `php artisan migrate` |
 | Storage link | `php artisan storage:link` |
 | Combined local stack | `composer run dev` |
+| Preview demo catalog | `php artisan stockpilot:demo-products --dry-run` |
+| Seed demo catalog (local only) | `php artisan stockpilot:demo-products` |
 
-Root URL `/` redirects to `/dashboard`, which requires authentication.
+Root URL `/` redirects to `/dashboard`, which requires authentication. See [Optional sample inventory (demo products)](#optional-sample-inventory-demo-products) before seeding.
 
 ## Product image storage setup
 
@@ -298,7 +300,36 @@ Frontend production build check:
 npm run build
 ```
 
-The verified baseline for this documentation milestone is **221** tests and **1,208** assertions with a successful `npm run build`. Re-run both commands after pulling changes.
+The verified baseline for this documentation milestone is **228** tests and **2,090** assertions. Re-run `php artisan test` (and `npm run build` after frontend changes) after pulling updates.
+
+## Optional sample inventory (demo products)
+
+StockPilot includes an optional catalog of **100** realistic office technology and supplies products across **eight** categories. Fresh installs do **not** create these records automatically. After migration you start with an empty catalog until you register a user and add products yourself, or optionally run the demo command below.
+
+The GitHub screenshots were captured from a local development database that contained those 100 `DEMO-` products plus one existing non-demo product (`MOUSE-001`). That mix is sample data for documentation, not an application default.
+
+Demo catalog characteristics:
+
+- Every demo SKU uses the `DEMO-` prefix (for example `DEMO-ACC-001`)
+- Categories cover computer accessories, networking, office supplies, storage, audio and video, cables, printing, and power
+- Stock levels intentionally include healthy stock, low stock, and out-of-stock items so dashboards and reports look realistic
+- Existing products are left unchanged; re-running skips SKUs that already exist
+- The command refuses to run when `APP_ENV=production`
+- At least one registered user must exist (attribution for catalog and stock writes)
+
+Preview without writing:
+
+```bash
+php artisan stockpilot:demo-products --dry-run
+```
+
+Insert into the **currently connected** database (asks for confirmation before writing):
+
+```bash
+php artisan stockpilot:demo-products
+```
+
+Use this only on a disposable or backed-up local development database. It changes catalog, category, stock movement, and audit data for that connection. Do **not** treat it as a production setup step.
 
 ## Security and implementation notes
 
